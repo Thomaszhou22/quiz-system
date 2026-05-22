@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz System — 学生端</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'PingFang SC', -apple-system, sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        h1 { font-size: 1.5rem; margin-bottom: 16px; color: #2f3542; }
+        .card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); width: 560px; max-width: 95vw; margin-top: 10px; display: flex; flex-direction: column; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 10px 12px; border: 1px solid #d1d8e0; border-radius: 8px; font-size: 14px; font-family: inherit; margin-bottom: 10px; }
+        input:focus { outline: none; border-color: #007bff; }
+        label { display: block; font-size: 0.85rem; color: #555; margin-bottom: 4px; font-weight: bold; }
+        .btn { padding: 14px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
+        .btn-primary { background: #007bff; color: #fff; }
+        .btn-primary:hover { background: #0069d9; }
+        .btn-danger { background: #dc3545; color: #fff; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-secondary { background: #f8f9fa; color: #333; border: 1px solid #d1d8e0; }
+        .btn-secondary:hover { background: #eef2f7; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; width: auto; }
+
+        /* Config */
+        .config-section { background: #fff8e1; border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid #ffe082; }
+
+        /* Question area */
+        #question-box { border-radius: 8px; background: #f8f9fa; padding: 15px; margin: 15px 0; border-left: 5px solid #007bff; min-height: 140px; }
+        #q-image { max-width: 100%; max-height: 300px; border-radius: 6px; margin: 8px auto; display: block; cursor: zoom-in; }
+        #q-text { font-size: 1rem; line-height: 1.6; white-space: pre-wrap; }
+        .option-btn { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; text-align: left; transition: 0.2s; font-size: 15px; }
+        .option-btn:hover:not(:disabled) { background: #eef2f7; border-color: #007bff; }
+        .option-btn:disabled { cursor: default; opacity: 0.7; }
+        .option-btn.correct-answer { background: #d4edda; border-color: #28a745; color: #155724; }
+        .option-btn.wrong-answer { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+        .status-msg { font-weight: bold; text-align: center; padding: 10px; border-radius: 6px; margin-top: 10px; display: none; }
+        .correct { background: #d4edda; color: #155724; }
+        .incorrect { background: #f8d7da; color: #721c24; }
+
+        /* Progress */
+        .progress-bar { width: 100%; height: 8px; background: #e9ecef; border-radius: 4px; margin: 10px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: #28a745; border-radius: 4px; transition: width 0.3s; }
+        .score-display { display: flex; justify-content: center; gap: 24px; font-size: 14px; color: #555; margin-top: 8px; }
+        .score-display span { font-weight: bold; }
+        .score-display .correct-count { color: #155724; }
+        .score-display .wrong-count { color: #721c24; }
+        .score-display .total-count { color: #007bff; }
+
+        /* Zoom */
+        .image-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; cursor: zoom-out; }
+        .image-overlay img { max-width: 95vw; max-height: 95vh; border-radius: 8px; }
+
+        /* Chapter modal */
+        #chapter-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center; z-index: 2001; }
+        .modal-box { background: #fff; padding: 28px 32px; border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,0.18); min-width: 360px; max-width: 90vw; max-height: 85vh; overflow-y: auto; }
+        .modal-box h2 { margin: 0 0 12px; font-size: 1.25rem; text-align: center; }
+        .chapter-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+        .chapter-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #d1d8e0; border-radius: 8px; cursor: pointer; transition: 0.15s; }
+        .chapter-item:hover { background: #f0f4ff; border-color: #007bff; }
+        .chapter-item.selected { background: #e8f0fe; border-color: #007bff; box-shadow: 0 0 0 2px rgba(0,123,255,0.2); }
+        .chapter-item input { width: 18px; height: 18px; accent-color: #007bff; cursor: pointer; }
+        .chapter-item .ch-name { flex: 1; font-weight: bold; font-size: 0.95rem; }
+        .chapter-item .ch-count { font-size: 0.8rem; color: #888; }
+        .quick-btns { display: flex; gap: 6px; margin-bottom: 14px; }
+        .quick-btns button { flex: 1; padding: 6px 10px; border: 1px solid #d1d8e0; border-radius: 6px; background: #f8f9fa; font-size: 0.8rem; font-weight: bold; cursor: pointer; }
+        .quick-btns button:hover { background: #eef2f7; }
+
+        /* Finish */
+        #finish-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: none; align-items: center; justify-content: center; z-index: 3000; padding: 20px; }
+        #finish-modal { background: #fff; border-radius: 16px; padding: 28px 32px; max-width: 420px; width: 100%; box-shadow: 0 16px 48px rgba(0,0,0,0.22); text-align: center; }
+        #finish-modal h2 { margin: 0 0 16px; font-size: 1.4rem; }
+        .stat-line { font-size: 1.1rem; margin: 8px 0; color: #333; }
+        .stat-line span { font-weight: bold; }
+
+        /* Wrong book */
+        #wrong-book-btn { position: fixed; right: 15px; top: 15px; z-index: 1000; padding: 8px 14px; border-radius: 8px; border: 1px solid #d1d8e0; background: #fff; font-size: 13px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+        #wrong-book-btn:hover { background: #eef2f7; }
+        #wrong-book-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 3500; padding: 20px; }
+        #wrong-book-panel { background: #fff; border-radius: 16px; padding: 20px; width: min(900px, 92vw); max-height: 85vh; overflow: auto; }
+        #wrong-book-panel h2 { text-align: center; margin-bottom: 16px; }
+        .wrong-book-item { border: 1px solid #ddd; border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+        .wrong-book-item img { max-width: 100%; max-height: 200px; border-radius: 6px; margin: 6px 0; }
+        .wrong-book-footer { display: flex; gap: 8px; margin-top: 16px; }
+
+        .section-hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="wrong-book-btn" onclick="openWrongBook()">错题本</div>
+
+<!-- Config -->
+<div class="card config-section" id="config-card">
+    <h2 style="font-size:1.1rem;margin-bottom:12px;">⚙️ Supabase 配置</h2>
+    <label>Supabase URL</label>
+    <input type="text" id="sb-url" placeholder="https://xxxx.supabase.co">
+    <label>Supabase Anon Key</label>
+    <input type="text" id="sb-key" placeholder="eyJ...">
+    <button class="btn btn-primary" onclick="saveConfig()" style="background:#f59e0b;">保存配置</button>
+</div>
+
+<!-- Code Input -->
+<div class="card" id="code-section">
+    <div id="info-panel-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;">
+        <div style="font-size:16px;font-weight:bold;" id="question-counter">输入题库代码开始答题</div>
+    </div>
+    <label>题库代码</label>
+    <input type="text" id="code-input" placeholder="输入6位代码" maxlength="6" style="font-size:1.2rem;text-align:center;letter-spacing:4px;text-transform:uppercase;">
+    <button class="btn btn-primary" onclick="loadQuiz()">加载题库</button>
+    <div id="msg" class="status-msg"></div>
+</div>
+
+<!-- Quiz Panel -->
+<div class="card section-hidden" id="quiz-panel">
+    <div id="info-panel-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:2px;">
+        <div style="font-size:16px;font-weight:bold;"><span id="question-counter2">第 1 / 1 题</span></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="score-display" id="score-display">
+        <span>✅ <span class="correct-count" id="correct-count">0</span></span>
+        <span>❌ <span class="wrong-count" id="wrong-count">0</span></span>
+        <span>剩余 <span class="total-count" id="remaining-count">0</span></span>
+    </div>
+    <div id="question-box">
+        <div id="q-text"></div>
+        <img id="q-image" style="display:none;" onclick="zoomImage(this.src)">
+        <div id="options"></div>
+    </div>
+    <div id="msg2" class="status-msg"></div>
+    <div style="margin-top:auto;padding-top:16px;">
+        <button class="btn btn-danger" id="abort-btn" onclick="abortQuiz()" style="display:none;">终止答题</button>
+        <button class="btn btn-secondary" onclick="backToCode()" style="margin-top:8px;">返回</button>
+    </div>
+</div>
+
+<!-- Chapter Modal -->
+<div id="chapter-modal">
+    <div class="modal-box">
+        <h2>选择题库章节</h2>
+        <div class="quick-btns">
+            <button onclick="selectAll(true)">全选</button>
+            <button onclick="selectAll(false)">全不选</button>
+        </div>
+        <div id="chapter-list" class="chapter-grid"></div>
+        <label>题目数量（留空使用全部）</label>
+        <input type="number" id="q-count" min="1" max="999" placeholder="例如：20">
+        <div id="chapter-info" style="font-size:0.8rem;color:#888;margin:8px 0;"></div>
+        <button class="btn btn-primary" onclick="confirmChapters()">开始答题</button>
+        <button class="btn btn-secondary" onclick="closeChapterModal()" style="margin-top:8px;">取消</button>
+    </div>
+</div>
+
+<!-- Finish -->
+<div id="finish-overlay">
+    <div id="finish-modal">
+        <h2>答题完成 🎉</h2>
+        <p class="stat-line">总题数：<span id="finish-total">0</span></p>
+        <p class="stat-line">正确：<span id="finish-correct" style="color:#155724">0</span></p>
+        <p class="stat-line">错误：<span id="finish-wrong" style="color:#721c24">0</span></p>
+        <p class="stat-line">正确率：<span id="finish-acc">—</span></p>
+        <button class="btn btn-primary" onclick="restart()" style="margin-top:20px;">重新选择</button>
+    </div>
+</div>
+
+<!-- Wrong Book -->
+<div id="wrong-book-overlay">
+    <div id="wrong-book-panel">
+        <h2>错题本</h2>
+        <div id="wrong-book-list"></div>
+        <div class="wrong-book-footer">
+            <button class="btn btn-danger" onclick="clearWrongBook()" style="flex:1">清空全部</button>
+            <button class="btn btn-secondary" onclick="closeWrongBook()" style="flex:1">关闭</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let supabase = null;
+let currentBank = null;
+let allQuestions = [];
+let quizQuestions = [];
+let questionIndex = 0;
+let totalCorrect = 0;
+let totalWrong = 0;
+let isAnswering = false;
+let currentQ = null;
+
+const PROGRESS_KEY = 'quiz-student-progress';
+const WRONG_KEY = 'quiz-student-wrong';
+
+// === Config ===
+function loadConfig() {
+    const url = localStorage.getItem('quiz-teacher-sb-url') || localStorage.getItem('quiz-student-sb-url') || '';
+    const key = localStorage.getItem('quiz-teacher-sb-key') || localStorage.getItem('quiz-student-sb-key') || '';
+    document.getElementById('sb-url').value = url;
+    document.getElementById('sb-key').value = key;
+    if (url && key) { initSB(url, key); document.getElementById('config-card').style.display = 'none'; }
+}
+
+function saveConfig() {
+    const url = document.getElementById('sb-url').value.trim();
+    const key = document.getElementById('sb-key').value.trim();
+    if (!url || !key) return;
+    localStorage.setItem('quiz-student-sb-url', url);
+    localStorage.setItem('quiz-student-sb-key', key);
+    initSB(url, key);
+    document.getElementById('config-card').style.display = 'none';
+}
+
+function initSB(url, key) {
+    supabase = window.supabase.createClient(url, key);
+}
+
+// === Load Quiz ===
+async function loadQuiz() {
+    if (!supabase) return showMsg('请先配置 Supabase', 'incorrect');
+    const code = document.getElementById('code-input').value.trim().toUpperCase();
+    if (!code) return showMsg('请输入题库代码', 'incorrect');
+    const { data: bank, error } = await supabase.from('quiz_banks').select('*').eq('code', code).single();
+    if (error || !bank) return showMsg('题库不存在，请检查代码', 'incorrect');
+    currentBank = bank;
+    const { data: questions } = await supabase.from('quiz_questions').select('*').eq('bank_id', bank.id).order('sort_order');
+    allQuestions = questions || [];
+    if (allQuestions.length === 0) return showMsg('该题库暂无题目', 'incorrect');
+    showMsg('', '');
+    // Show chapter selection
+    openChapterModal();
+}
+
+function showMsg(t, c) { const m = document.getElementById('msg'); m.textContent = t; m.className = 'status-msg ' + c; m.style.display = t ? 'block' : 'none'; }
+
+// === Chapter Selection ===
+function openChapterModal() {
+    const chapters = {};
+    allQuestions.forEach(q => {
+        const ch = q.chapter_name || '全部题目';
+        if (!chapters[ch]) chapters[ch] = [];
+        chapters[ch].push(q);
+    });
+    const list = document.getElementById('chapter-list');
+    list.innerHTML = Object.entries(chapters).map(([ch, qs]) =>
+        `<div class="chapter-item" onclick="toggleChapter(this)"><input type="checkbox" value="${esc(ch)}" checked><span class="ch-name">${esc(ch)}</span><span class="ch-count">${qs.length} 题</span></div>`
+    ).join('');
+    updateChapterInfo();
+    document.getElementById('chapter-modal').style.display = 'flex';
+}
+
+function toggleChapter(el) {
+    const cb = el.querySelector('input');
+    cb.checked = !cb.checked;
+    el.classList.toggle('selected', !cb.checked);
+}
+
+function selectAll(val) {
+    document.querySelectorAll('#chapter-list input').forEach(cb => cb.checked = val);
+}
+
+function updateChapterInfo() {
+    const checked = document.querySelectorAll('#chapter-list input:checked');
+    let total = 0;
+    checked.forEach(cb => { const ch = cb.value; total += allQuestions.filter(q => (q.chapter_name || '全部题目') === ch).length; });
+    document.getElementById('chapter-info').textContent = total > 0 ? `已选 ${total} 道题` : '请至少选择一个';
+}
+
+function closeChapterModal() { document.getElementById('chapter-modal').style.display = 'none'; }
+
+function confirmChapters() {
+    const checked = document.querySelectorAll('#chapter-list input:checked');
+    if (checked.length === 0) return;
+    const selectedChapters = Array.from(checked).map(cb => cb.value);
+    let filtered = allQuestions.filter(q => selectedChapters.includes(q.chapter_name || '全部题目'));
+    const maxCount = parseInt(document.getElementById('q-count').value) || 0;
+    // Shuffle
+    for (let i = filtered.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [filtered[i], filtered[j]] = [filtered[j], filtered[i]]; }
+    if (maxCount > 0 && filtered.length > maxCount) filtered.length = maxCount;
+    quizQuestions = filtered;
+    closeChapterModal();
+    startQuiz();
+}
+
+// === Quiz ===
+function startQuiz() {
+    questionIndex = 0; totalCorrect = 0; totalWrong = 0;
+    document.getElementById('code-section').classList.add('section-hidden');
+    document.getElementById('quiz-panel').classList.remove('section-hidden');
+    document.getElementById('abort-btn').style.display = 'block';
+    showNext();
+}
+
+function showNext() {
+    if (questionIndex >= quizQuestions.length) { showFinish(); return; }
+    isAnswering = true;
+    currentQ = quizQuestions[questionIndex];
+    document.getElementById('question-counter2').textContent = `第 ${questionIndex + 1} / ${quizQuestions.length} 题`;
+    updateScore();
+
+    const qText = document.getElementById('q-text');
+    const qImg = document.getElementById('q-image');
+    const optDiv = document.getElementById('options');
+    optDiv.innerHTML = '';
+
+    if (currentQ.question_type === 'image') {
+        qText.innerHTML = `<b>Q${questionIndex + 1}：</b>`;
+        qImg.src = currentQ.question_content;
+        qImg.style.display = 'block';
+    } else {
+        qText.innerHTML = `<b>Q${questionIndex + 1}：</b>${esc(currentQ.question_content)}`;
+        qImg.style.display = 'none';
+    }
+
+    // Options
+    const opts = currentQ.options ? currentQ.options.split('|') : [];
+    if (opts.length > 0 && currentQ.question_type === 'text') {
+        ['A', 'B', 'C', 'D'].forEach((letter, i) => {
+            if (i < opts.length) {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = `${letter}) ${opts[i]}`;
+                btn.onclick = () => handleAnswer(letter, btn);
+                optDiv.appendChild(btn);
+            }
+        });
+    } else {
+        // Image questions: just A/B/C/D
+        ['A', 'B', 'C', 'D'].forEach(letter => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = letter;
+            btn.onclick = () => handleAnswer(letter, btn);
+            optDiv.appendChild(btn);
+        });
+    }
+}
+
+function handleAnswer(letter, btn) {
+    if (!isAnswering) return;
+    isAnswering = false;
+    const correct = letter === currentQ.answer;
+    const allBtns = document.querySelectorAll('#options .option-btn');
+    allBtns.forEach(b => {
+        b.disabled = true;
+        if (b.textContent.startsWith(currentQ.answer)) b.classList.add('correct-answer');
+    });
+    if (correct) {
+        totalCorrect++;
+        showStatus('✅ 正确！', 'correct');
+    } else {
+        totalWrong++;
+        btn.classList.add('wrong-answer');
+        showStatus(`❌ 错误！正确答案: ${currentQ.answer}`, 'incorrect');
+        addWrongRecord(currentQ, letter);
+    }
+    updateScore();
+    setTimeout(() => { questionIndex++; showNext(); }, 1500);
+}
+
+function updateScore() {
+    document.getElementById('correct-count').textContent = totalCorrect;
+    document.getElementById('wrong-count').textContent = totalWrong;
+    document.getElementById('remaining-count').textContent = quizQuestions.length - questionIndex;
+    const pct = quizQuestions.length > 0 ? Math.round(((totalCorrect + totalWrong) / quizQuestions.length) * 100) : 0;
+    document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function showStatus(t, c) { const m = document.getElementById('msg2'); m.textContent = t; m.className = 'status-msg ' + c; m.style.display = 'block'; }
+
+function showFinish() {
+    const total = totalCorrect + totalWrong;
+    document.getElementById('finish-total').textContent = total;
+    document.getElementById('finish-correct').textContent = totalCorrect;
+    document.getElementById('finish-wrong').textContent = totalWrong;
+    document.getElementById('finish-acc').textContent = total > 0 ? Math.round((totalCorrect / total) * 100) + '%' : '—';
+    document.getElementById('finish-overlay').style.display = 'flex';
+}
+
+function abortQuiz() {
+    quizQuestions = []; questionIndex = 0; totalCorrect = 0; totalWrong = 0;
+    document.getElementById('quiz-panel').classList.add('section-hidden');
+    document.getElementById('code-section').classList.remove('section-hidden');
+    document.getElementById('abort-btn').style.display = 'none';
+}
+
+function restart() {
+    document.getElementById('finish-overlay').style.display = 'none';
+    document.getElementById('quiz-panel').classList.add('section-hidden');
+    document.getElementById('code-section').classList.remove('section-hidden');
+}
+
+function backToCode() {
+    if (isAnswering && !confirm('确定要退出当前答题？')) return;
+    abortQuiz();
+}
+
+// === Zoom ===
+function zoomImage(src) {
+    const o = document.createElement('div');
+    o.className = 'image-overlay';
+    o.onclick = () => o.remove();
+    const img = document.createElement('img');
+    img.src = src;
+    o.appendChild(img);
+    document.body.appendChild(o);
+}
+
+// === Wrong Book ===
+function getWrongBook() { try { return JSON.parse(localStorage.getItem(WRONG_KEY) || '[]'); } catch { return []; } }
+function saveWrongBook(records) { localStorage.setItem(WRONG_KEY, JSON.stringify(records)); }
+
+function addWrongRecord(q, userAnswer) {
+    const records = getWrongBook();
+    records.push({ question: q.question_content, type: q.question_type, answer: q.answer, userAnswer, timestamp: Date.now() });
+    saveWrongBook(records);
+}
+
+function openWrongBook() {
+    const records = getWrongBook();
+    const list = document.getElementById('wrong-book-list');
+    if (!records.length) { list.innerHTML = '<p style="text-align:center;color:#999;">暂无错题</p>'; }
+    else {
+        list.innerHTML = records.map((r, i) => {
+            const content = r.type === 'image' ? `<img src="${r.question}">` : `<p>${esc(r.question)}</p>`;
+            return `<div class="wrong-book-item"><div style="font-size:0.85rem;color:#888;margin-bottom:6px;">#${i + 1} · ${new Date(r.timestamp).toLocaleString('zh-CN')}</div>${content}<div style="margin-top:6px;font-weight:bold;">你的答案: <span style="color:#dc3545">${r.userAnswer}</span> | 正确答案: <span style="color:#28a745">${r.answer}</span></div></div>`;
+        }).join('');
+    }
+    document.getElementById('wrong-book-overlay').style.display = 'flex';
+}
+
+function closeWrongBook() { document.getElementById('wrong-book-overlay').style.display = 'none'; }
+function clearWrongBook() { if (confirm('确定清空全部错题？')) { saveWrongBook([]); openWrongBook(); } }
+
+// === Utils ===
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+loadConfig();
+</script>
+</body>
+</html>

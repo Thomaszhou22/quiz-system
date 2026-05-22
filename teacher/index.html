@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz System — 教师端</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'PingFang SC', -apple-system, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        h1 { font-size: 1.5rem; margin-bottom: 16px; color: #2f3542; }
+        .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); width: 600px; max-width: 95vw; margin-bottom: 16px; }
+        .card h2 { font-size: 1.1rem; margin-bottom: 16px; color: #2f3542; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; }
+        input[type="text"], input[type="number"], textarea { width: 100%; padding: 10px 12px; border: 1px solid #d1d8e0; border-radius: 8px; font-size: 14px; font-family: inherit; margin-bottom: 10px; }
+        input:focus, textarea:focus { outline: none; border-color: #007bff; }
+        textarea { min-height: 200px; resize: vertical; }
+        label { display: block; font-size: 0.85rem; color: #555; margin-bottom: 4px; font-weight: bold; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: #007bff; color: #fff; }
+        .btn-primary:hover { background: #0069d9; }
+        .btn-danger { background: #dc3545; color: #fff; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-secondary { background: #f8f9fa; color: #333; border: 1px solid #d1d8e0; }
+        .btn-secondary:hover { background: #eef2f7; }
+        .btn-success { background: #28a745; color: #fff; }
+        .btn-success:hover { background: #218838; }
+        .btn-amber { background: #f59e0b; color: #fff; }
+        .btn-amber:hover { background: #d97706; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .btn-block { width: 100%; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .bank-item { border: 1px solid #e0e6ed; border-radius: 10px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .bank-info h3 { font-size: 1rem; margin-bottom: 4px; }
+        .bank-info .code { font-family: monospace; background: #e8f0fe; color: #007bff; padding: 2px 8px; border-radius: 4px; font-size: 0.9rem; }
+        .bank-info .meta { font-size: 0.8rem; color: #888; margin-top: 4px; }
+        .chapter-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+        .chapter-tag { background: #e8f0fe; color: #007bff; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
+        .chapter-tag .remove { cursor: pointer; margin-left: 6px; color: #999; }
+        .chapter-tag .remove:hover { color: #dc3545; }
+        .mode-tabs { display: flex; gap: 0; margin-bottom: 16px; }
+        .mode-tab { flex: 1; padding: 10px; text-align: center; border: 1px solid #d1d8e0; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: 0.2s; background: #f8f9fa; }
+        .mode-tab:first-child { border-radius: 8px 0 0 8px; }
+        .mode-tab:last-child { border-radius: 0 8px 8px 0; }
+        .mode-tab.active { background: #007bff; color: #fff; border-color: #007bff; }
+        .upload-area { border: 2px dashed #d1d8e0; border-radius: 10px; padding: 30px; text-align: center; cursor: pointer; transition: 0.2s; margin-bottom: 12px; }
+        .upload-area:hover { border-color: #007bff; background: #f0f4ff; }
+        .upload-area p { color: #888; font-size: 0.9rem; }
+        .preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin: 12px 0; }
+        .preview-item { position: relative; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+        .preview-item img { width: 100%; height: 80px; object-fit: cover; }
+        .preview-item .answer-select { position: absolute; top: 4px; right: 4px; }
+        .preview-item select { padding: 2px 4px; border-radius: 4px; border: 1px solid #ccc; font-size: 12px; }
+        .preview-item .q-num { position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.6); color: #fff; padding: 1px 6px; border-radius: 4px; font-size: 11px; }
+        .code-display { text-align: center; padding: 20px; background: #e8f0fe; border-radius: 10px; margin: 12px 0; }
+        .code-display .code { font-family: monospace; font-size: 2rem; font-weight: bold; color: #007bff; letter-spacing: 4px; }
+        .code-display p { font-size: 0.85rem; color: #666; margin-top: 6px; }
+        .config-section { background: #fff8e1; border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid #ffe082; }
+        .config-section label { color: #795548; }
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: bold; z-index: 9999; display: none; }
+        #toast.success { background: #d4edda; color: #155724; display: block; }
+        #toast.error { background: #f8d7da; color: #721c24; display: block; }
+        .empty-state { text-align: center; padding: 30px; color: #999; }
+        .section-hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="toast"></div>
+    <h1>📝 Quiz System — 教师端</h1>
+
+    <!-- Supabase Config -->
+    <div class="card config-section" id="config-card">
+        <h2>⚙️ Supabase 配置</h2>
+        <label>Supabase URL</label>
+        <input type="text" id="sb-url" placeholder="https://xxxx.supabase.co">
+        <label>Supabase Anon Key</label>
+        <input type="text" id="sb-key" placeholder="eyJ...">
+        <div class="actions">
+            <button class="btn btn-amber btn-block" onclick="saveConfig()">保存配置</button>
+        </div>
+    </div>
+
+    <!-- Bank List -->
+    <div class="card">
+        <h2>📚 题库列表</h2>
+        <div id="bank-list"><div class="empty-state">暂无题库，点击下方创建</div></div>
+        <div class="actions">
+            <button class="btn btn-primary btn-block" onclick="showCreateBank()">＋ 新建题库</button>
+        </div>
+    </div>
+
+    <!-- Create Bank -->
+    <div class="card section-hidden" id="create-section">
+        <h2>🆕 新建题库</h2>
+        <label>题库名称</label>
+        <input type="text" id="bank-name" placeholder="例如：IGCSE Biology">
+        <label>章节（每行一个，可选）</label>
+        <textarea id="bank-chapters" rows="4" placeholder="Characteristics&#10;Organization&#10;Movement"></textarea>
+        <div class="actions">
+            <button class="btn btn-primary" onclick="createBank()">创建题库</button>
+            <button class="btn btn-secondary" onclick="hideCreateBank()">取消</button>
+        </div>
+    </div>
+
+    <!-- Upload Questions -->
+    <div class="card section-hidden" id="upload-section">
+        <h2 id="upload-title">📤 上传题目</h2>
+        <div class="code-display" id="upload-code-display"></div>
+
+        <!-- Mode tabs -->
+        <div class="mode-tabs">
+            <div class="mode-tab active" onclick="switchMode('image')">📷 图片上传</div>
+            <div class="mode-tab" onclick="switchMode('text')">📝 文字输入</div>
+        </div>
+
+        <!-- Chapter selector -->
+        <label>选择章节</label>
+        <select id="upload-chapter" style="width:100%;padding:10px;border:1px solid #d1d8e0;border-radius:8px;margin-bottom:12px;font-size:14px;">
+            <option value="">不分区</option>
+        </select>
+
+        <!-- Image mode -->
+        <div id="image-mode">
+            <div class="upload-area" onclick="document.getElementById('file-input').click()">
+                <p>📷 点击上传题目图片（支持多选）</p>
+                <p style="font-size:0.8rem;margin-top:4px;">每张图片对应一道选择题</p>
+            </div>
+            <input type="file" id="file-input" multiple accept="image/*" style="display:none" onchange="handleFiles(this.files)">
+            <div id="image-preview" class="preview-grid"></div>
+            <div id="image-answers" style="margin-top:12px;"></div>
+        </div>
+
+        <!-- Text mode -->
+        <div id="text-mode" class="section-hidden">
+            <label>输入题目（按以下格式）</label>
+            <textarea id="text-input" rows="10" placeholder="1. 题目内容&#10;A) 选项A&#10;B) 选项B&#10;C) 选项C&#10;D) 选项D&#10;Answer: B&#10;&#10;2. 下一题..."></textarea>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-success btn-block" onclick="uploadQuestions()">提交题目</button>
+        </div>
+        <div class="actions" style="margin-top:8px;">
+            <button class="btn btn-secondary btn-block" onclick="hideUpload()">返回列表</button>
+        </div>
+    </div>
+
+    <!-- View Bank -->
+    <div class="card section-hidden" id="view-section">
+        <h2 id="view-title">📊 题库详情</h2>
+        <div id="view-content"></div>
+        <div class="actions">
+            <button class="btn btn-primary" onclick="showUploadFor(currentBankId)">上传题目</button>
+            <button class="btn btn-secondary" onclick="hideView()">返回列表</button>
+        </div>
+    </div>
+
+<script>
+// === Config ===
+let supabase = null;
+let currentBankId = null;
+let uploadedFiles = [];
+let currentMode = 'image';
+
+function loadConfig() {
+    const url = localStorage.getItem('quiz-teacher-sb-url') || '';
+    const key = localStorage.getItem('quiz-teacher-sb-key') || '';
+    document.getElementById('sb-url').value = url;
+    document.getElementById('sb-key').value = key;
+    if (url && key) initSupabase(url, key);
+}
+
+function saveConfig() {
+    const url = document.getElementById('sb-url').value.trim();
+    const key = document.getElementById('sb-key').value.trim();
+    if (!url || !key) return toast('请填写完整配置', 'error');
+    localStorage.setItem('quiz-teacher-sb-url', url);
+    localStorage.setItem('quiz-teacher-sb-key', key);
+    initSupabase(url, key);
+    toast('配置已保存', 'success');
+}
+
+function initSupabase(url, key) {
+    try {
+        supabase = window.supabase.createClient(url, key);
+        document.getElementById('config-card').style.display = 'none';
+        loadBanks();
+    } catch(e) {
+        toast('Supabase 连接失败: ' + e.message, 'error');
+    }
+}
+
+function toast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = type;
+    setTimeout(() => t.className = '', 3000);
+}
+
+// === Banks ===
+async function loadBanks() {
+    if (!supabase) return;
+    const { data, error } = await supabase.from('quiz_banks').select('*').order('created_at', { ascending: false });
+    if (error) return toast('加载失败: ' + error.message, 'error');
+    const list = document.getElementById('bank-list');
+    if (!data || data.length === 0) {
+        list.innerHTML = '<div class="empty-state">暂无题库，点击下方创建</div>';
+        return;
+    }
+    list.innerHTML = data.map(b => {
+        const chapters = b.chapters || [];
+        const date = new Date(b.created_at).toLocaleDateString('zh-CN');
+        return `<div class="bank-item">
+            <div class="bank-info">
+                <h3>${esc(b.name)}</h3>
+                <span class="code">${b.code}</span>
+                <div class="meta">${date} · ${chapters.length} 章节</div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary btn-sm" onclick="viewBank('${b.id}')">查看</button>
+                <button class="btn btn-amber btn-sm" onclick="showUploadFor('${b.id}')">上传</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteBank('${b.id}','${esc(b.name)}')">删除</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function showCreateBank() { document.getElementById('create-section').classList.remove('section-hidden'); }
+function hideCreateBank() { document.getElementById('create-section').classList.add('section-hidden'); }
+
+async function createBank() {
+    if (!supabase) return toast('请先配置 Supabase', 'error');
+    const name = document.getElementById('bank-name').value.trim();
+    if (!name) return toast('请输入题库名称', 'error');
+    const chaptersText = document.getElementById('bank-chapters').value.trim();
+    const chapters = chaptersText ? chaptersText.split('\n').map(s => s.trim()).filter(Boolean) : [];
+    const code = genCode();
+    const { data, error } = await supabase.from('quiz_banks').insert({ name, code, chapters }).select().single();
+    if (error) return toast('创建失败: ' + error.message, 'error');
+    toast(`题库已创建！代码: ${code}`, 'success');
+    document.getElementById('bank-name').value = '';
+    document.getElementById('bank-chapters').value = '';
+    hideCreateBank();
+    loadBanks();
+}
+
+async function deleteBank(id, name) {
+    if (!confirm(`确定删除题库「${name}」？所有题目也会被删除。`)) return;
+    await supabase.from('quiz_questions').delete().eq('bank_id', id);
+    await supabase.from('quiz_banks').delete().eq('id', id);
+    toast('已删除', 'success');
+    loadBanks();
+}
+
+// === Upload ===
+async function showUploadFor(bankId) {
+    currentBankId = bankId;
+    uploadedFiles = [];
+    const { data: bank } = await supabase.from('quiz_banks').select('*').eq('id', bankId).single();
+    if (!bank) return toast('题库不存在', 'error');
+    document.getElementById('upload-title').textContent = `📤 上传题目 — ${bank.name}`;
+    document.getElementById('upload-code-display').innerHTML = `<div class="code">${bank.code}</div><p>分享此代码给学生</p>`;
+    // Fill chapter select
+    const sel = document.getElementById('upload-chapter');
+    sel.innerHTML = '<option value="">不分区</option>' + (bank.chapters || []).map((c, i) => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    // Reset
+    document.getElementById('image-preview').innerHTML = '';
+    document.getElementById('image-answers').innerHTML = '';
+    document.getElementById('text-input').value = '';
+    uploadedFiles = [];
+    hideAll();
+    document.getElementById('upload-section').classList.remove('section-hidden');
+}
+
+function switchMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-tab').forEach((t, i) => t.classList.toggle('active', (i === 0 && mode === 'image') || (i === 1 && mode === 'text')));
+    document.getElementById('image-mode').classList.toggle('section-hidden', mode !== 'image');
+    document.getElementById('text-mode').classList.toggle('section-hidden', mode !== 'text');
+}
+
+function handleFiles(files) {
+    const arr = Array.from(files);
+    uploadedFiles = arr;
+    const preview = document.getElementById('image-preview');
+    const answers = document.getElementById('image-answers');
+    preview.innerHTML = '';
+    answers.innerHTML = '<label>按顺序为每张图片选择正确答案</label>';
+    arr.forEach((f, i) => {
+        const url = URL.createObjectURL(f);
+        preview.innerHTML += `<div class="preview-item"><span class="q-num">${i + 1}</span><img src="${url}"><div class="answer-select"><select id="ans-${i}"><option value="">?</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div></div>`;
+    });
+}
+
+async function uploadQuestions() {
+    if (!supabase || !currentBankId) return toast('请先选择题库', 'error');
+    const chapter = document.getElementById('upload-chapter').value;
+
+    if (currentMode === 'image') {
+        if (uploadedFiles.length === 0) return toast('请先上传图片', 'error');
+        // Check all answers filled
+        for (let i = 0; i < uploadedFiles.length; i++) {
+            const ans = document.getElementById(`ans-${i}`)?.value;
+            if (!ans) return toast(`请为第 ${i + 1} 张图片选择答案`, 'error');
+        }
+        // Upload images to Storage, then insert questions
+        toast('上传中...', 'success');
+        const rows = [];
+        for (let i = 0; i < uploadedFiles.length; i++) {
+            const f = uploadedFiles[i];
+            const ext = f.name.split('.').pop();
+            const path = `${currentBankId}/${Date.now()}-${i}.${ext}`;
+            const { error: uploadErr } = await supabase.storage.from('quiz-images').upload(path, f);
+            if (uploadErr) return toast(`图片上传失败: ${uploadErr.message}`, 'error');
+            const { data: { publicUrl } } = supabase.storage.from('quiz-images').getPublicUrl(path);
+            const ans = document.getElementById(`ans-${i}`).value;
+            rows.push({ bank_id: currentBankId, chapter_name: chapter || null, question_type: 'image', question_content: publicUrl, options: null, answer: ans, sort_order: i + 1 });
+        }
+        const { error } = await supabase.from('quiz_questions').insert(rows);
+        if (error) return toast('保存失败: ' + error.message, 'error');
+        toast(`已上传 ${rows.length} 道题目！`, 'success');
+    } else {
+        const text = document.getElementById('text-input').value.trim();
+        if (!text) return toast('请输入题目内容', 'error');
+        const questions = parseTextQuestions(text);
+        if (questions.length === 0) return toast('未能解析到题目，请检查格式', 'error');
+        const rows = questions.map((q, i) => ({
+            bank_id: currentBankId, chapter_name: chapter || null, question_type: 'text',
+            question_content: q.question, options: q.options.join('|'), answer: q.answer, sort_order: i + 1
+        }));
+        const { error } = await supabase.from('quiz_questions').insert(rows);
+        if (error) return toast('保存失败: ' + error.message, 'error');
+        toast(`已添加 ${rows.length} 道题目！`, 'success');
+    }
+    uploadedFiles = [];
+    document.getElementById('image-preview').innerHTML = '';
+    document.getElementById('image-answers').innerHTML = '';
+    document.getElementById('text-input').value = '';
+}
+
+function parseTextQuestions(text) {
+    const results = [];
+    const blocks = text.split(/\n(?=\d+[\.\、\)\]）/])/);
+    for (const block of blocks) {
+        const lines = block.trim().split('\n').map(l => l.trim()).filter(Boolean);
+        if (lines.length < 3) continue;
+        // First line: question
+        const qLine = lines[0].replace(/^\d+[\.\、\)\]）/\s]*/, '').trim();
+        const options = [];
+        let answer = '';
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i];
+            if (/^[A-D][\.\)\]、\s]/i.test(line)) {
+                options.push(line.replace(/^[A-D][\.\)\]、\s]*/i, '').trim());
+            } else if (/^answer\s*[:：]/i.test(line)) {
+                answer = line.replace(/^answer\s*[:：]\s*/i, '').trim().toUpperCase();
+            }
+        }
+        if (qLine && options.length >= 2 && answer) {
+            results.push({ question: qLine, options, answer });
+        }
+    }
+    return results;
+}
+
+// === View Bank ===
+async function viewBank(id) {
+    currentBankId = id;
+    const { data: bank } = await supabase.from('quiz_banks').select('*').eq('id', id).single();
+    const { data: questions } = await supabase.from('quiz_questions').select('*').eq('bank_id', id).order('sort_order');
+    document.getElementById('view-title').textContent = `📊 ${bank.name}`;
+    const total = questions ? questions.length : 0;
+    const chapters = {};
+    (questions || []).forEach(q => {
+        const ch = q.chapter_name || '未分区';
+        if (!chapters[ch]) chapters[ch] = 0;
+        chapters[ch]++;
+    });
+    let html = `<div class="code-display"><div class="code">${bank.code}</div><p>学生代码</p></div>`;
+    html += `<p style="margin:8px 0"><strong>总题数：</strong>${total}</p>`;
+    html += '<table style="width:100%;border-collapse:collapse;margin:8px 0"><tr style="background:#f8f9fa"><th style="padding:8px;text-align:left;border:1px solid #ddd">章节</th><th style="padding:8px;border:1px solid #ddd">题数</th></tr>';
+    for (const [ch, count] of Object.entries(chapters)) {
+        html += `<tr><td style="padding:8px;border:1px solid #ddd">${esc(ch)}</td><td style="padding:8px;border:1px solid #ddd;text-align:center">${count}</td></tr>`;
+    }
+    html += '</table>';
+    document.getElementById('view-content').innerHTML = html;
+    hideAll();
+    document.getElementById('view-section').classList.remove('section-hidden');
+}
+function hideView() { document.getElementById('view-section').classList.add('section-hidden'); loadBanks(); showBankList(); }
+function hideUpload() { document.getElementById('upload-section').classList.add('section-hidden'); loadBanks(); showBankList(); }
+
+function hideAll() {
+    ['create-section', 'upload-section', 'view-section'].forEach(id => document.getElementById(id).classList.add('section-hidden'));
+}
+function showBankList() { /* banks are always visible */ }
+
+// === Utils ===
+function genCode() { const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 6; i++) s += c[Math.floor(Math.random() * c.length)]; return s; }
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// === Init ===
+loadConfig();
+</script>
+</body>
+</html>
