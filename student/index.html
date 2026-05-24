@@ -94,15 +94,7 @@
     <button onclick="retryWrongQuestions()" class="btn-amber" style="background:#f59e0b;color:#fff;border-color:#f59e0b;">🔄 重练错题</button>
 </div>
 
-<!-- Config -->
-<div class="card config-section" id="config-card">
-    <h2 style="font-size:1.1rem;margin-bottom:12px;">⚙️ Supabase 配置</h2>
-    <label>Supabase URL</label>
-    <input type="text" id="sb-url" placeholder="https://xxxx.supabase.co">
-    <label>Supabase Anon Key</label>
-    <input type="text" id="sb-key" placeholder="eyJ...">
-    <button class="btn btn-primary" onclick="saveConfig()" style="background:#f59e0b;">保存配置</button>
-</div>
+<!-- Supabase 配置已内置 -->
 
 <!-- Code Input -->
 <div class="card" id="code-section">
@@ -205,31 +197,18 @@ let answerDetails = []; // for submitting results
 const WRONG_KEY = 'quiz-student-wrong';
 const IDENTITY_KEY = 'quiz-student-identity';
 
+const SB_URL = 'https://shbrzimzhoqremvxhzib.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoYnJ6aW16aG9xcmVtdnhoemliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NjYwOTcsImV4cCI6MjA5NTA0MjA5N30.UBLG-XCvMwn1D7U77AY_6IGJWSKMnc1Ii2qQIJW-NMI';
+
 // === Config ===
 function loadConfig() {
-    const url = localStorage.getItem('quiz-teacher-sb-url') || localStorage.getItem('quiz-student-sb-url') || '';
-    const key = localStorage.getItem('quiz-teacher-sb-key') || localStorage.getItem('quiz-student-sb-key') || '';
-    document.getElementById('sb-url').value = url;
-    document.getElementById('sb-key').value = key;
-    if (url && key) { initSB(url, key); document.getElementById('config-card').style.display = 'none'; }
+    supabase = window.supabase.createClient(SB_URL, SB_KEY);
     // Load identity
     try {
         const saved = JSON.parse(localStorage.getItem(IDENTITY_KEY) || '{}');
         if (saved.name) studentIdentity = saved;
     } catch {}
 }
-
-function saveConfig() {
-    const url = document.getElementById('sb-url').value.trim();
-    const key = document.getElementById('sb-key').value.trim();
-    if (!url || !key) return;
-    localStorage.setItem('quiz-student-sb-url', url);
-    localStorage.setItem('quiz-student-sb-key', key);
-    initSB(url, key);
-    document.getElementById('config-card').style.display = 'none';
-}
-
-function initSB(url, key) { supabase = window.supabase.createClient(url, key); }
 
 // === Load Quiz ===
 async function loadQuiz() {

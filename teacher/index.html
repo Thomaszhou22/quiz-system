@@ -96,16 +96,7 @@
     <h1>📝 Quiz System — 教师端</h1>
 
     <!-- Supabase Config -->
-    <div class="card config-section" id="config-card">
-        <h2>⚙️ Supabase 配置</h2>
-        <label>Supabase URL</label>
-        <input type="text" id="sb-url" placeholder="https://xxxx.supabase.co">
-        <label>Supabase Anon Key</label>
-        <input type="text" id="sb-key" placeholder="eyJ...">
-        <div class="actions">
-            <button class="btn btn-amber btn-block" onclick="saveConfig()">保存配置</button>
-        </div>
-    </div>
+    <!-- Supabase 配置已内置 -->
 
     <!-- Bank List -->
     <div class="card">
@@ -252,31 +243,15 @@ let currentBankId = null;
 let uploadedFiles = [];
 let currentMode = 'image';
 
+const SB_URL = 'https://shbrzimzhoqremvxhzib.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoYnJ6aW16aG9xcmVtdnhoemliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NjYwOTcsImV4cCI6MjA5NTA0MjA5N30.UBLG-XCvMwn1D7U77AY_6IGJWSKMnc1Ii2qQIJW-NMI';
+
 function loadConfig() {
-    const url = localStorage.getItem('quiz-teacher-sb-url') || '';
-    const key = localStorage.getItem('quiz-teacher-sb-key') || '';
-    document.getElementById('sb-url').value = url;
-    document.getElementById('sb-key').value = key;
-    if (url && key) initSupabase(url, key);
-}
-
-function saveConfig() {
-    const url = document.getElementById('sb-url').value.trim();
-    const key = document.getElementById('sb-key').value.trim();
-    if (!url || !key) return toast('请填写完整配置', 'error');
-    localStorage.setItem('quiz-teacher-sb-url', url);
-    localStorage.setItem('quiz-teacher-sb-key', key);
-    initSupabase(url, key);
-    toast('配置已保存', 'success');
-}
-
-function initSupabase(url, key) {
     try {
-        supabase = window.supabase.createClient(url, key);
-        document.getElementById('config-card').style.display = 'none';
+        supabase = window.supabase.createClient(SB_URL, SB_KEY);
         loadBanks();
     } catch(e) {
-        toast('Supabase 连接失败: ' + e.message, 'error');
+        toast('连接失败: ' + e.message, 'error');
     }
 }
 
