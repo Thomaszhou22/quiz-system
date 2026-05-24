@@ -80,7 +80,7 @@
         .wrong-book-item img { max-width: 100%; max-height: 200px; border-radius: 6px; margin: 6px 0; }
         .wrong-book-footer { display: flex; gap: 8px; margin-top: 16px; }
 
-        .section-hidden { display: none; }
+        .section-hidden { display: none !important; }
 
         /* Fill input */
         .fill-input { width: 100%; padding: 12px; border: 2px solid #007bff; border-radius: 8px; font-size: 16px; margin: 8px 0; }
@@ -265,7 +265,7 @@ function openChapterModal() {
     document.getElementById('chapter-modal').style.display = 'flex';
 }
 
-function toggleChapter(el) { const cb = el.querySelector('input'); cb.checked = !cb.checked; }
+function toggleChapter(el) { const cb = el.querySelector('input'); if (document.activeElement !== cb) cb.checked = !cb.checked; }
 function selectAll(val) { document.querySelectorAll('#chapter-list input').forEach(cb => cb.checked = val); }
 function updateChapterInfo() {
     const checked = document.querySelectorAll('#chapter-list input:checked');
@@ -340,15 +340,14 @@ function showNext() {
         // True/False
         const opts = ['正确', '错误'];
         const letters = ['A', 'B'];
-        // Shuffle TF? No, keep consistent. Answer: T=A(正确), F=B(错误)
-        const shuffled = opts.map((o, i) => ({ letter: letters[i], text: o, originalIndex: i }));
-        // Store mapping for answer checking
+        // T=A(正确), F=B(错误)
+        const shuffled = opts.map((o, i) => ({ letter: letters[i], text: o, mappedAnswer: i === 0 ? 'T' : 'F' }));
         currentQ._shuffledOptions = shuffled;
         shuffled.forEach(item => {
             const btn = document.createElement('button');
             btn.className = 'option-btn';
             btn.textContent = `${item.letter}) ${item.text}`;
-            btn.onclick = () => handleAnswer(item.letter, btn);
+            btn.onclick = () => handleAnswer(item.mappedAnswer, btn);
             optDiv.appendChild(btn);
         });
     } else if (currentQ.question_type === 'text') {
@@ -390,10 +389,11 @@ function handleAnswer(originalLetter, btn) {
 
     allBtns.forEach(b => {
         b.disabled = true;
-        // Find the correct answer button and highlight it
+        // Highlight correct answer
         if (currentQ._shuffledOptions) {
             currentQ._shuffledOptions.forEach(item => {
-                if (item.originalLetter === currentQ.answer && b.textContent.startsWith(item.letter)) {
+                const itemAnswer = item.mappedAnswer || item.originalLetter;
+                if (itemAnswer === currentQ.answer && b.textContent.startsWith(item.letter)) {
                     b.classList.add('correct-answer');
                 }
             });
@@ -410,7 +410,7 @@ function handleAnswer(originalLetter, btn) {
     } else {
         totalWrong++;
         btn.classList.add('wrong-answer');
-        showStatus(`❌ 错误！正确答案: ${currentQ.answer}`, 'incorrect');
+        showStatus(`❌ 错误！正确答案: ${currentQ.question_type === 'truefalse' ? (currentQ.answer === 'T' ? '正确' : '错误') : currentQ.answer}`, 'incorrect');
         answerDetails.push({ question_index: questionIndex, correct: false, user_answer: originalLetter });
         addWrongRecord(currentQ, originalLetter);
     }
