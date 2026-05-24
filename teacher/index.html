@@ -11,8 +11,8 @@
         h1 { font-size: 1.5rem; margin-bottom: 16px; color: #2f3542; }
         .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); width: 600px; max-width: 95vw; margin-bottom: 16px; }
         .card h2 { font-size: 1.1rem; margin-bottom: 16px; color: #2f3542; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; }
-        input[type="text"], input[type="number"], textarea { width: 100%; padding: 10px 12px; border: 1px solid #d1d8e0; border-radius: 8px; font-size: 14px; font-family: inherit; margin-bottom: 10px; }
-        input:focus, textarea:focus { outline: none; border-color: #007bff; }
+        input[type="text"], input[type="number"], textarea, select { width: 100%; padding: 10px 12px; border: 1px solid #d1d8e0; border-radius: 8px; font-size: 14px; font-family: inherit; margin-bottom: 10px; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #007bff; }
         textarea { min-height: 200px; resize: vertical; }
         label { display: block; font-size: 0.85rem; color: #555; margin-bottom: 4px; font-weight: bold; }
         .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s; }
@@ -62,6 +62,33 @@
         #toast.error { background: #f8d7da; color: #721c24; display: block; }
         .empty-state { text-align: center; padding: 30px; color: #999; }
         .section-hidden { display: none; }
+
+        /* Question list in view */
+        .q-list-item { border: 1px solid #e0e6ed; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+        .q-list-item img { max-width: 100%; max-height: 120px; border-radius: 6px; margin: 6px 0; }
+        .q-list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .q-list-header .q-num { font-weight: bold; color: #007bff; }
+        .q-list-header .q-type { font-size: 0.8rem; background: #e8f0fe; color: #007bff; padding: 2px 8px; border-radius: 4px; }
+        .q-list-content { font-size: 0.9rem; margin-bottom: 6px; }
+        .q-list-options { font-size: 0.85rem; color: #555; margin-bottom: 4px; }
+        .q-list-answer { font-weight: bold; color: #28a745; }
+
+        /* Edit modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+        .modal-box { background: #fff; border-radius: 14px; padding: 24px; min-width: 400px; max-width: 90vw; max-height: 85vh; overflow-y: auto; box-shadow: 0 12px 40px rgba(0,0,0,0.18); }
+        .modal-box h2 { margin: 0 0 16px; font-size: 1.2rem; }
+
+        /* Stats panel */
+        .stats-card { background: #f8f9fa; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+        .stats-item { text-align: center; padding: 16px; background: #fff; border-radius: 10px; border: 1px solid #e0e6ed; }
+        .stats-item .stats-value { font-size: 1.8rem; font-weight: bold; color: #007bff; }
+        .stats-item .stats-label { font-size: 0.8rem; color: #888; margin-top: 4px; }
+        table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 0.85rem; }
+        th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+        th { background: #f8f9fa; font-weight: bold; }
+        .acc-bar { height: 6px; background: #e9ecef; border-radius: 3px; overflow: hidden; }
+        .acc-bar-fill { height: 100%; background: #28a745; border-radius: 3px; }
     </style>
 </head>
 <body>
@@ -113,6 +140,15 @@
             <div class="mode-tab" onclick="switchMode('text')">📝 文字输入</div>
         </div>
 
+        <!-- Question type selector -->
+        <label>题目类型</label>
+        <select id="upload-qtype" style="width:100%;padding:10px;border:1px solid #d1d8e0;border-radius:8px;margin-bottom:12px;font-size:14px;">
+            <option value="text">选择题 (ABCD)</option>
+            <option value="image">图片选择题</option>
+            <option value="truefalse">判断题</option>
+            <option value="fill">填空题</option>
+        </select>
+
         <!-- Chapter selector -->
         <label>选择章节</label>
         <select id="upload-chapter" style="width:100%;padding:10px;border:1px solid #d1d8e0;border-radius:8px;margin-bottom:12px;font-size:14px;">
@@ -133,7 +169,7 @@
         <!-- Text mode -->
         <div id="text-mode" class="section-hidden">
             <label>输入题目（按以下格式）</label>
-            <textarea id="text-input" rows="10" placeholder="1. 题目内容&#10;A) 选项A&#10;B) 选项B&#10;C) 选项C&#10;D) 选项D&#10;Answer: B&#10;&#10;2. 下一题..."></textarea>
+            <textarea id="text-input" rows="10" placeholder="选择题格式：&#10;1. 题目内容&#10;A) 选项A&#10;B) 选项B&#10;C) 选项C&#10;D) 选项D&#10;Answer: B&#10;&#10;判断题格式：&#10;1. 题目内容&#10;Answer: T&#10;&#10;填空题格式：&#10;1. 题目内容&#10;Answer: 正确答案"></textarea>
         </div>
 
         <div class="actions">
@@ -151,6 +187,61 @@
         <div class="actions">
             <button class="btn btn-primary" onclick="showUploadFor(currentBankId)">上传题目</button>
             <button class="btn btn-secondary" onclick="hideView()">返回列表</button>
+        </div>
+    </div>
+
+    <!-- Stats Panel -->
+    <div class="card section-hidden" id="stats-section">
+        <h2>📊 答题统计</h2>
+        <div id="stats-content"><div class="empty-state">加载中...</div></div>
+        <div class="actions">
+            <button class="btn btn-secondary" onclick="hideStats()">返回列表</button>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="modal-overlay section-hidden">
+        <div class="modal-box">
+            <h2>✏️ 编辑题目</h2>
+            <input type="hidden" id="edit-qid">
+            <label>题目类型</label>
+            <select id="edit-qtype" onchange="toggleEditFields()">
+                <option value="text">选择题</option>
+                <option value="image">图片选择题</option>
+                <option value="truefalse">判断题</option>
+                <option value="fill">填空题</option>
+            </select>
+            <label>题目内容</label>
+            <textarea id="edit-content" rows="3"></textarea>
+            <div id="edit-options-area">
+                <label>选项（每行一个，格式：A) 内容）</label>
+                <textarea id="edit-options" rows="4" placeholder="A) 选项A&#10;B) 选项B&#10;C) 选项C&#10;D) 选项D"></textarea>
+            </div>
+            <div id="edit-answer-area">
+                <label>正确答案</label>
+                <select id="edit-answer-select">
+                    <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+                </select>
+            </div>
+            <div id="edit-tf-answer" class="section-hidden">
+                <label>正确答案</label>
+                <select id="edit-tf-select">
+                    <option value="T">正确 (T)</option><option value="F">错误 (F)</option>
+                </select>
+            </div>
+            <div id="edit-fill-answer" class="section-hidden">
+                <label>正确答案</label>
+                <input type="text" id="edit-fill-input" placeholder="填空题答案">
+            </div>
+            <div id="edit-image-area" class="section-hidden">
+                <label>替换图片</label>
+                <input type="file" id="edit-image-file" accept="image/*">
+                <img id="edit-image-preview" style="max-width:100%;max-height:150px;border-radius:6px;margin:6px 0;">
+            </div>
+            <div class="actions">
+                <button class="btn btn-success" onclick="saveEdit()">保存</button>
+                <button class="btn btn-secondary" onclick="closeEditModal()">取消</button>
+            </div>
         </div>
     </div>
 
@@ -217,6 +308,7 @@ async function loadBanks() {
             </div>
             <div class="actions">
                 <button class="btn btn-primary btn-sm" onclick="viewBank('${b.id}')">查看</button>
+                <button class="btn btn-sm" style="background:#6f42c1;color:#fff;" onclick="showStats('${b.id}','${esc(b.name)}')">📊 统计</button>
                 <button class="btn btn-amber btn-sm" onclick="showUploadFor('${b.id}')">上传</button>
                 <button class="btn btn-danger btn-sm" onclick="deleteBank('${b.id}','${esc(b.name)}')">删除</button>
             </div>
@@ -259,13 +351,12 @@ async function showUploadFor(bankId) {
     if (!bank) return toast('题库不存在', 'error');
     document.getElementById('upload-title').textContent = `📤 上传题目 — ${bank.name}`;
     document.getElementById('upload-code-display').innerHTML = `<div class="code">${bank.code}</div><p>分享此代码给学生</p>`;
-    // Fill chapter select
     const sel = document.getElementById('upload-chapter');
-    sel.innerHTML = '<option value="">不分区</option>' + (bank.chapters || []).map((c, i) => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
-    // Reset
+    sel.innerHTML = '<option value="">不分区</option>' + (bank.chapters || []).map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
     document.getElementById('image-preview').innerHTML = '';
     document.getElementById('image-answers').innerHTML = '';
     document.getElementById('text-input').value = '';
+    document.getElementById('upload-qtype').value = 'text';
     uploadedFiles = [];
     hideAll();
     document.getElementById('upload-section').classList.remove('section-hidden');
@@ -294,15 +385,14 @@ function handleFiles(files) {
 async function uploadQuestions() {
     if (!supabase || !currentBankId) return toast('请先选择题库', 'error');
     const chapter = document.getElementById('upload-chapter').value;
+    const qtype = document.getElementById('upload-qtype').value;
 
     if (currentMode === 'image') {
         if (uploadedFiles.length === 0) return toast('请先上传图片', 'error');
-        // Check all answers filled
         for (let i = 0; i < uploadedFiles.length; i++) {
             const ans = document.getElementById(`ans-${i}`)?.value;
             if (!ans) return toast(`请为第 ${i + 1} 张图片选择答案`, 'error');
         }
-        // Upload images to Storage, then insert questions
         toast('上传中...', 'success');
         const rows = [];
         for (let i = 0; i < uploadedFiles.length; i++) {
@@ -321,12 +411,17 @@ async function uploadQuestions() {
     } else {
         const text = document.getElementById('text-input').value.trim();
         if (!text) return toast('请输入题目内容', 'error');
-        const questions = parseTextQuestions(text);
-        if (questions.length === 0) return toast('未能解析到题目，请检查格式', 'error');
-        const rows = questions.map((q, i) => ({
-            bank_id: currentBankId, chapter_name: chapter || null, question_type: 'text',
-            question_content: q.question, options: q.options.join('|'), answer: q.answer, sort_order: i + 1
-        }));
+
+        let rows = [];
+        if (qtype === 'truefalse') {
+            rows = parseTrueFalseQuestions(text, chapter);
+        } else if (qtype === 'fill') {
+            rows = parseFillQuestions(text, chapter);
+        } else {
+            rows = parseTextQuestions(text, chapter);
+        }
+
+        if (rows.length === 0) return toast('未能解析到题目，请检查格式', 'error');
         const { error } = await supabase.from('quiz_questions').insert(rows);
         if (error) return toast('保存失败: ' + error.message, 'error');
         toast(`已添加 ${rows.length} 道题目！`, 'success');
@@ -337,14 +432,13 @@ async function uploadQuestions() {
     document.getElementById('text-input').value = '';
 }
 
-function parseTextQuestions(text) {
+function parseTextQuestions(text, chapter) {
     const results = [];
-    const blocks = text.split(/\n(?=\d+[\.\、\)\]）/])/);
+    const blocks = text.split(/\n(?=\d+[\.\、\)\]])/);
     for (const block of blocks) {
         const lines = block.trim().split('\n').map(l => l.trim()).filter(Boolean);
         if (lines.length < 3) continue;
-        // First line: question
-        const qLine = lines[0].replace(/^\d+[\.\、\)\]）/\s]*/, '').trim();
+        const qLine = lines[0].replace(/^\d+[\.\、\)\]）\s]*/, '').trim();
         const options = [];
         let answer = '';
         for (let i = 1; i < lines.length; i++) {
@@ -356,7 +450,47 @@ function parseTextQuestions(text) {
             }
         }
         if (qLine && options.length >= 2 && answer) {
-            results.push({ question: qLine, options, answer });
+            results.push({ bank_id: currentBankId, chapter_name: chapter || null, question_type: 'text', question_content: qLine, options: options.join('|'), answer, sort_order: results.length + 1 });
+        }
+    }
+    return results;
+}
+
+function parseTrueFalseQuestions(text, chapter) {
+    const results = [];
+    const blocks = text.split(/\n(?=\d+[\.\、\)\]])/);
+    for (const block of blocks) {
+        const lines = block.trim().split('\n').map(l => l.trim()).filter(Boolean);
+        if (lines.length < 2) continue;
+        const qLine = lines[0].replace(/^\d+[\.\、\)\]）\s]*/, '').trim();
+        let answer = '';
+        for (let i = 1; i < lines.length; i++) {
+            if (/^answer\s*[:：]/i.test(lines[i])) {
+                answer = lines[i].replace(/^answer\s*[:：]\s*/i, '').trim().toUpperCase();
+            }
+        }
+        if (qLine && (answer === 'T' || answer === 'F')) {
+            results.push({ bank_id: currentBankId, chapter_name: chapter || null, question_type: 'truefalse', question_content: qLine, options: '正确|错误', answer, sort_order: results.length + 1 });
+        }
+    }
+    return results;
+}
+
+function parseFillQuestions(text, chapter) {
+    const results = [];
+    const blocks = text.split(/\n(?=\d+[\.\、\)\]])/);
+    for (const block of blocks) {
+        const lines = block.trim().split('\n').map(l => l.trim()).filter(Boolean);
+        if (lines.length < 2) continue;
+        const qLine = lines[0].replace(/^\d+[\.\、\)\]）\s]*/, '').trim();
+        let answer = '';
+        for (let i = 1; i < lines.length; i++) {
+            if (/^answer\s*[:：]/i.test(lines[i])) {
+                answer = lines[i].replace(/^answer\s*[:：]\s*/i, '').trim();
+            }
+        }
+        if (qLine && answer) {
+            results.push({ bank_id: currentBankId, chapter_name: chapter || null, question_type: 'fill', question_content: qLine, options: null, answer, sort_order: results.length + 1 });
         }
     }
     return results;
@@ -377,28 +511,214 @@ async function viewBank(id) {
     });
     let html = `<div class="code-display"><div class="code">${bank.code}</div><p>学生代码</p></div>`;
     html += `<p style="margin:8px 0"><strong>总题数：</strong>${total}</p>`;
-    html += '<table style="width:100%;border-collapse:collapse;margin:8px 0"><tr style="background:#f8f9fa"><th style="padding:8px;text-align:left;border:1px solid #ddd">章节</th><th style="padding:8px;border:1px solid #ddd">题数</th></tr>';
+    html += '<table><tr><th>章节</th><th>题数</th></tr>';
     for (const [ch, count] of Object.entries(chapters)) {
-        html += `<tr><td style="padding:8px;border:1px solid #ddd">${esc(ch)}</td><td style="padding:8px;border:1px solid #ddd;text-align:center">${count}</td></tr>`;
+        html += `<tr><td>${esc(ch)}</td><td style="text-align:center">${count}</td></tr>`;
     }
     html += '</table>';
+
+    // Question list with edit/delete
+    html += '<h3 style="margin:16px 0 8px;font-size:1rem;">题目列表</h3>';
+    if (questions && questions.length > 0) {
+        questions.forEach((q, i) => {
+            const typeLabel = { text: '选择题', image: '图片题', truefalse: '判断题', fill: '填空题' }[q.question_type] || q.question_type;
+            html += `<div class="q-list-item">`;
+            html += `<div class="q-list-header"><span class="q-num">Q${i + 1}</span><span class="q-type">${typeLabel}</span></div>`;
+            if (q.question_type === 'image') {
+                html += `<img src="${esc(q.question_content)}">`;
+            } else {
+                html += `<div class="q-list-content">${esc(q.question_content)}</div>`;
+            }
+            if (q.options && q.question_type === 'text') {
+                const opts = q.options.split('|');
+                html += `<div class="q-list-options">${opts.map((o, j) => `${String.fromCharCode(65 + j)}) ${esc(o)}`).join('<br>')}</div>`;
+            }
+            if (q.question_type === 'truefalse') {
+                html += `<div class="q-list-options">A) 正确 &nbsp; B) 错误</div>`;
+            }
+            html += `<div class="q-list-answer">答案：${q.question_type === 'truefalse' ? (q.answer === 'T' ? '正确' : '错误') : esc(q.answer)}</div>`;
+            html += `<div class="actions" style="margin-top:6px;">`;
+            html += `<button class="btn btn-primary btn-sm" onclick="openEditModal('${q.id}')">✏️ 编辑</button>`;
+            html += `<button class="btn btn-danger btn-sm" onclick="deleteQuestion('${q.id}', ${i + 1})">🗑 删除</button>`;
+            html += `</div></div>`;
+        });
+    } else {
+        html += '<div class="empty-state">暂无题目</div>';
+    }
+
     document.getElementById('view-content').innerHTML = html;
     hideAll();
     document.getElementById('view-section').classList.remove('section-hidden');
 }
+
+// === Edit Question ===
+async function openEditModal(qid) {
+    const { data: q } = await supabase.from('quiz_questions').select('*').eq('id', qid).single();
+    if (!q) return toast('题目不存在', 'error');
+    document.getElementById('edit-qid').value = q.id;
+    document.getElementById('edit-qtype').value = q.question_type;
+    document.getElementById('edit-content').value = q.question_type === 'image' ? '' : q.question_content;
+    if (q.options) {
+        const opts = q.options.split('|');
+        document.getElementById('edit-options').value = opts.map((o, i) => `${String.fromCharCode(65 + i)}) ${o}`).join('\n');
+    } else {
+        document.getElementById('edit-options').value = '';
+    }
+    // Set answer
+    if (q.question_type === 'truefalse') {
+        document.getElementById('edit-tf-select').value = q.answer;
+    } else if (q.question_type === 'fill') {
+        document.getElementById('edit-fill-input').value = q.answer;
+    } else {
+        document.getElementById('edit-answer-select').value = q.answer;
+    }
+    // Image preview
+    if (q.question_type === 'image') {
+        document.getElementById('edit-image-preview').src = q.question_content;
+        document.getElementById('edit-image-preview').style.display = 'block';
+    } else {
+        document.getElementById('edit-image-preview').style.display = 'none';
+    }
+    toggleEditFields();
+    document.getElementById('edit-modal').classList.remove('section-hidden');
+}
+
+function toggleEditFields() {
+    const qtype = document.getElementById('edit-qtype').value;
+    document.getElementById('edit-options-area').classList.toggle('section-hidden', qtype === 'image' || qtype === 'truefalse' || qtype === 'fill');
+    document.getElementById('edit-answer-area').classList.toggle('section-hidden', qtype === 'truefalse' || qtype === 'fill');
+    document.getElementById('edit-tf-answer').classList.toggle('section-hidden', qtype !== 'truefalse');
+    document.getElementById('edit-fill-answer').classList.toggle('section-hidden', qtype !== 'fill');
+    document.getElementById('edit-image-area').classList.toggle('section-hidden', qtype !== 'image');
+}
+
+function closeEditModal() { document.getElementById('edit-modal').classList.add('section-hidden'); }
+
+async function saveEdit() {
+    const qid = document.getElementById('edit-qid').value;
+    const qtype = document.getElementById('edit-qtype').value;
+    let content = document.getElementById('edit-content').value.trim();
+    let options = null;
+    let answer = '';
+
+    if (qtype === 'text') {
+        const optText = document.getElementById('edit-options').value.trim();
+        const optLines = optText.split('\n').map(l => l.replace(/^[A-D][\.\)\]、\s]*/i, '').trim()).filter(Boolean);
+        options = optLines.join('|');
+        answer = document.getElementById('edit-answer-select').value;
+        if (!content || !answer) return toast('请填写题目内容和答案', 'error');
+    } else if (qtype === 'truefalse') {
+        options = '正确|错误';
+        answer = document.getElementById('edit-tf-select').value;
+        if (!content) return toast('请填写题目内容', 'error');
+    } else if (qtype === 'fill') {
+        answer = document.getElementById('edit-fill-input').value.trim();
+        if (!content || !answer) return toast('请填写题目内容和答案', 'error');
+    } else if (qtype === 'image') {
+        const file = document.getElementById('edit-image-file').files[0];
+        if (file) {
+            const ext = file.name.split('.').pop();
+            const path = `${currentBankId}/${Date.now()}-edit.${ext}`;
+            const { error: uploadErr } = await supabase.storage.from('quiz-images').upload(path, file);
+            if (uploadErr) return toast('图片上传失败', 'error');
+            const { data: { publicUrl } } = supabase.storage.from('quiz-images').getPublicUrl(path);
+            content = publicUrl;
+        } else {
+            // Keep existing - need to fetch current
+            const { data: cur } = await supabase.from('quiz_questions').select('question_content').eq('id', qid).single();
+            content = cur ? cur.question_content : '';
+        }
+        answer = document.getElementById('edit-answer-select').value;
+        if (!answer) return toast('请选择答案', 'error');
+    }
+
+    const updates = { question_type: qtype, question_content: content, options, answer };
+    const { error } = await supabase.from('quiz_questions').update(updates).eq('id', qid);
+    if (error) return toast('保存失败: ' + error.message, 'error');
+    toast('已保存', 'success');
+    closeEditModal();
+    viewBank(currentBankId);
+}
+
+async function deleteQuestion(qid, num) {
+    if (!confirm(`确定删除第 ${num} 题？`)) return;
+    const { error } = await supabase.from('quiz_questions').delete().eq('id', qid);
+    if (error) return toast('删除失败: ' + error.message, 'error');
+    toast('已删除', 'success');
+    viewBank(currentBankId);
+}
+
+// === Stats ===
+async function showStats(bankId, bankName) {
+    currentBankId = bankId;
+    hideAll();
+    document.getElementById('stats-section').classList.remove('section-hidden');
+    const { data: results } = await supabase.from('quiz_results').select('*').eq('bank_id', bankId).order('created_at', { ascending: false });
+    const container = document.getElementById('stats-content');
+
+    if (!results || results.length === 0) {
+        container.innerHTML = `<h3>${esc(bankName)}</h3><div class="empty-state">暂无答题记录</div>`;
+        return;
+    }
+
+    const totalStudents = results.length;
+    const avgAcc = Math.round(results.reduce((s, r) => s + r.accuracy, 0) / totalStudents);
+
+    // Per-question accuracy
+    const qStats = {};
+    results.forEach(r => {
+        const answers = r.answers || [];
+        answers.forEach((a, i) => {
+            const key = `Q${i + 1}`;
+            if (!qStats[key]) qStats[key] = { correct: 0, total: 0 };
+            qStats[key].total++;
+            if (a.correct) qStats[key].correct++;
+        });
+    });
+
+    let html = `<h3 style="margin-bottom:12px;">${esc(bankName)}</h3>`;
+    html += `<div class="stats-grid">
+        <div class="stats-item"><div class="stats-value">${totalStudents}</div><div class="stats-label">提交人数</div></div>
+        <div class="stats-item"><div class="stats-value">${avgAcc}%</div><div class="stats-label">平均正确率</div></div>
+        <div class="stats-item"><div class="stats-value">${results.reduce((s, r) => s + r.correct_count, 0)}</div><div class="stats-label">总答对数</div></div>
+    </div>`;
+
+    // Question accuracy ranking
+    html += '<h3 style="margin:12px 0 8px;">每题正确率</h3>';
+    html += '<table><tr><th>题目</th><th>正确率</th><th>答对/总数</th><th>分布</th></tr>';
+    const sortedQ = Object.entries(qStats).sort((a, b) => (a[1].correct / a[1].total) - (b[1].correct / b[1].total));
+    sortedQ.forEach(([key, s]) => {
+        const acc = s.total > 0 ? Math.round(s.correct / s.total * 100) : 0;
+        html += `<tr><td>${key}</td><td>${acc}%</td><td>${s.correct}/${s.total}</td><td><div class="acc-bar"><div class="acc-bar-fill" style="width:${acc}%"></div></div></td></tr>`;
+    });
+    html += '</table>';
+
+    // Student list
+    html += '<h3 style="margin:16px 0 8px;">学生列表</h3>';
+    html += '<table><tr><th>姓名</th><th>班级</th><th>正确率</th><th>答对/总数</th><th>提交时间</th></tr>';
+    results.forEach(r => {
+        const time = new Date(r.created_at).toLocaleString('zh-CN');
+        html += `<tr><td>${esc(r.student_name || '匿名')}</td><td>${esc(r.class_name || '-')}</td><td>${r.accuracy}%</td><td>${r.correct_count}/${r.total_questions}</td><td>${time}</td></tr>`;
+    });
+    html += '</table>';
+
+    container.innerHTML = html;
+}
+
+function hideStats() { document.getElementById('stats-section').classList.add('section-hidden'); loadBanks(); showBankList(); }
+
 function hideView() { document.getElementById('view-section').classList.add('section-hidden'); loadBanks(); showBankList(); }
 function hideUpload() { document.getElementById('upload-section').classList.add('section-hidden'); loadBanks(); showBankList(); }
 
 function hideAll() {
-    ['create-section', 'upload-section', 'view-section'].forEach(id => document.getElementById(id).classList.add('section-hidden'));
+    ['create-section', 'upload-section', 'view-section', 'stats-section'].forEach(id => document.getElementById(id).classList.add('section-hidden'));
 }
-function showBankList() { /* banks are always visible */ }
+function showBankList() { }
 
 // === Utils ===
 function genCode() { const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 6; i++) s += c[Math.floor(Math.random() * c.length)]; return s; }
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
-// === Init ===
 loadConfig();
 </script>
 </body>

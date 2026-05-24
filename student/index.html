@@ -21,11 +21,10 @@
         .btn-secondary { background: #f8f9fa; color: #333; border: 1px solid #d1d8e0; }
         .btn-secondary:hover { background: #eef2f7; }
         .btn-sm { padding: 6px 12px; font-size: 12px; width: auto; }
-
-        /* Config */
+        .btn-amber { background: #f59e0b; color: #fff; }
+        .btn-amber:hover { background: #d97706; }
         .config-section { background: #fff8e1; border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid #ffe082; }
 
-        /* Question area */
         #question-box { border-radius: 8px; background: #f8f9fa; padding: 15px; margin: 15px 0; border-left: 5px solid #007bff; min-height: 140px; }
         #q-image { max-width: 100%; max-height: 300px; border-radius: 6px; margin: 8px auto; display: block; cursor: zoom-in; }
         #q-text { font-size: 1rem; line-height: 1.6; white-space: pre-wrap; }
@@ -38,7 +37,6 @@
         .correct { background: #d4edda; color: #155724; }
         .incorrect { background: #f8d7da; color: #721c24; }
 
-        /* Progress */
         .progress-bar { width: 100%; height: 8px; background: #e9ecef; border-radius: 4px; margin: 10px 0; overflow: hidden; }
         .progress-fill { height: 100%; background: #28a745; border-radius: 4px; transition: width 0.3s; }
         .score-display { display: flex; justify-content: center; gap: 24px; font-size: 14px; color: #555; margin-top: 8px; }
@@ -47,18 +45,16 @@
         .score-display .wrong-count { color: #721c24; }
         .score-display .total-count { color: #007bff; }
 
-        /* Zoom */
         .image-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; cursor: zoom-out; }
         .image-overlay img { max-width: 95vw; max-height: 95vh; border-radius: 8px; }
 
-        /* Chapter modal */
-        #chapter-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center; z-index: 2001; }
+        /* Modals */
+        #chapter-modal, #identity-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center; z-index: 2001; }
         .modal-box { background: #fff; padding: 28px 32px; border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,0.18); min-width: 360px; max-width: 90vw; max-height: 85vh; overflow-y: auto; }
         .modal-box h2 { margin: 0 0 12px; font-size: 1.25rem; text-align: center; }
         .chapter-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
         .chapter-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #d1d8e0; border-radius: 8px; cursor: pointer; transition: 0.15s; }
         .chapter-item:hover { background: #f0f4ff; border-color: #007bff; }
-        .chapter-item.selected { background: #e8f0fe; border-color: #007bff; box-shadow: 0 0 0 2px rgba(0,123,255,0.2); }
         .chapter-item input { width: 18px; height: 18px; accent-color: #007bff; cursor: pointer; }
         .chapter-item .ch-name { flex: 1; font-weight: bold; font-size: 0.95rem; }
         .chapter-item .ch-count { font-size: 0.8rem; color: #888; }
@@ -66,16 +62,17 @@
         .quick-btns button { flex: 1; padding: 6px 10px; border: 1px solid #d1d8e0; border-radius: 6px; background: #f8f9fa; font-size: 0.8rem; font-weight: bold; cursor: pointer; }
         .quick-btns button:hover { background: #eef2f7; }
 
-        /* Finish */
         #finish-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: none; align-items: center; justify-content: center; z-index: 3000; padding: 20px; }
         #finish-modal { background: #fff; border-radius: 16px; padding: 28px 32px; max-width: 420px; width: 100%; box-shadow: 0 16px 48px rgba(0,0,0,0.22); text-align: center; }
         #finish-modal h2 { margin: 0 0 16px; font-size: 1.4rem; }
         .stat-line { font-size: 1.1rem; margin: 8px 0; color: #333; }
         .stat-line span { font-weight: bold; }
 
-        /* Wrong book */
-        #wrong-book-btn { position: fixed; right: 15px; top: 15px; z-index: 1000; padding: 8px 14px; border-radius: 8px; border: 1px solid #d1d8e0; background: #fff; font-size: 13px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
-        #wrong-book-btn:hover { background: #eef2f7; }
+        /* Wrong book buttons */
+        .top-btns { position: fixed; right: 15px; top: 15px; z-index: 1000; display: flex; gap: 6px; }
+        .top-btns button { padding: 8px 14px; border-radius: 8px; border: 1px solid #d1d8e0; background: #fff; font-size: 13px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+        .top-btns button:hover { background: #eef2f7; }
+
         #wrong-book-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 3500; padding: 20px; }
         #wrong-book-panel { background: #fff; border-radius: 16px; padding: 20px; width: min(900px, 92vw); max-height: 85vh; overflow: auto; }
         #wrong-book-panel h2 { text-align: center; margin-bottom: 16px; }
@@ -84,11 +81,18 @@
         .wrong-book-footer { display: flex; gap: 8px; margin-top: 16px; }
 
         .section-hidden { display: none; }
+
+        /* Fill input */
+        .fill-input { width: 100%; padding: 12px; border: 2px solid #007bff; border-radius: 8px; font-size: 16px; margin: 8px 0; }
+        .fill-input:focus { outline: none; border-color: #0056b3; box-shadow: 0 0 0 3px rgba(0,123,255,0.15); }
     </style>
 </head>
 <body>
 
-<div id="wrong-book-btn" onclick="openWrongBook()">错题本</div>
+<div class="top-btns">
+    <button onclick="openWrongBook()">错题本</button>
+    <button onclick="retryWrongQuestions()" class="btn-amber" style="background:#f59e0b;color:#fff;border-color:#f59e0b;">🔄 重练错题</button>
+</div>
 
 <!-- Config -->
 <div class="card config-section" id="config-card">
@@ -102,9 +106,7 @@
 
 <!-- Code Input -->
 <div class="card" id="code-section">
-    <div id="info-panel-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;">
-        <div style="font-size:16px;font-weight:bold;" id="question-counter">输入题库代码开始答题</div>
-    </div>
+    <div style="font-size:16px;font-weight:bold;margin-bottom:8px;">输入题库代码开始答题</div>
     <label>题库代码</label>
     <input type="text" id="code-input" placeholder="输入6位代码" maxlength="6" style="font-size:1.2rem;text-align:center;letter-spacing:4px;text-transform:uppercase;">
     <button class="btn btn-primary" onclick="loadQuiz()">加载题库</button>
@@ -113,7 +115,7 @@
 
 <!-- Quiz Panel -->
 <div class="card section-hidden" id="quiz-panel">
-    <div id="info-panel-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:2px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:2px;">
         <div style="font-size:16px;font-weight:bold;"><span id="question-counter2">第 1 / 1 题</span></div>
     </div>
     <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
@@ -131,6 +133,18 @@
     <div style="margin-top:auto;padding-top:16px;">
         <button class="btn btn-danger" id="abort-btn" onclick="abortQuiz()" style="display:none;">终止答题</button>
         <button class="btn btn-secondary" onclick="backToCode()" style="margin-top:8px;">返回</button>
+    </div>
+</div>
+
+<!-- Identity Modal -->
+<div id="identity-modal">
+    <div class="modal-box">
+        <h2>👤 学生信息</h2>
+        <label>昵称</label>
+        <input type="text" id="student-name" placeholder="输入你的昵称">
+        <label>班级</label>
+        <input type="text" id="student-class" placeholder="例如：高一1班">
+        <button class="btn btn-primary" onclick="confirmIdentity()">确认</button>
     </div>
 </div>
 
@@ -185,9 +199,11 @@ let totalCorrect = 0;
 let totalWrong = 0;
 let isAnswering = false;
 let currentQ = null;
+let studentIdentity = { name: '', className: '' };
+let answerDetails = []; // for submitting results
 
-const PROGRESS_KEY = 'quiz-student-progress';
 const WRONG_KEY = 'quiz-student-wrong';
+const IDENTITY_KEY = 'quiz-student-identity';
 
 // === Config ===
 function loadConfig() {
@@ -196,6 +212,11 @@ function loadConfig() {
     document.getElementById('sb-url').value = url;
     document.getElementById('sb-key').value = key;
     if (url && key) { initSB(url, key); document.getElementById('config-card').style.display = 'none'; }
+    // Load identity
+    try {
+        const saved = JSON.parse(localStorage.getItem(IDENTITY_KEY) || '{}');
+        if (saved.name) studentIdentity = saved;
+    } catch {}
 }
 
 function saveConfig() {
@@ -208,9 +229,7 @@ function saveConfig() {
     document.getElementById('config-card').style.display = 'none';
 }
 
-function initSB(url, key) {
-    supabase = window.supabase.createClient(url, key);
-}
+function initSB(url, key) { supabase = window.supabase.createClient(url, key); }
 
 // === Load Quiz ===
 async function loadQuiz() {
@@ -224,11 +243,32 @@ async function loadQuiz() {
     allQuestions = questions || [];
     if (allQuestions.length === 0) return showMsg('该题库暂无题目', 'incorrect');
     showMsg('', '');
-    // Show chapter selection
-    openChapterModal();
+    // Check identity
+    if (!studentIdentity.name) {
+        showIdentityModal();
+    } else {
+        openChapterModal();
+    }
 }
 
 function showMsg(t, c) { const m = document.getElementById('msg'); m.textContent = t; m.className = 'status-msg ' + c; m.style.display = t ? 'block' : 'none'; }
+
+// === Identity ===
+function showIdentityModal() {
+    document.getElementById('student-name').value = studentIdentity.name || '';
+    document.getElementById('student-class').value = studentIdentity.className || '';
+    document.getElementById('identity-modal').style.display = 'flex';
+}
+
+function confirmIdentity() {
+    const name = document.getElementById('student-name').value.trim();
+    const className = document.getElementById('student-class').value.trim();
+    if (!name) return alert('请输入昵称');
+    studentIdentity = { name, className };
+    localStorage.setItem(IDENTITY_KEY, JSON.stringify(studentIdentity));
+    document.getElementById('identity-modal').style.display = 'none';
+    openChapterModal();
+}
 
 // === Chapter Selection ===
 function openChapterModal() {
@@ -246,23 +286,14 @@ function openChapterModal() {
     document.getElementById('chapter-modal').style.display = 'flex';
 }
 
-function toggleChapter(el) {
-    const cb = el.querySelector('input');
-    cb.checked = !cb.checked;
-    el.classList.toggle('selected', !cb.checked);
-}
-
-function selectAll(val) {
-    document.querySelectorAll('#chapter-list input').forEach(cb => cb.checked = val);
-}
-
+function toggleChapter(el) { const cb = el.querySelector('input'); cb.checked = !cb.checked; }
+function selectAll(val) { document.querySelectorAll('#chapter-list input').forEach(cb => cb.checked = val); }
 function updateChapterInfo() {
     const checked = document.querySelectorAll('#chapter-list input:checked');
     let total = 0;
-    checked.forEach(cb => { const ch = cb.value; total += allQuestions.filter(q => (q.chapter_name || '全部题目') === ch).length; });
+    checked.forEach(cb => { total += allQuestions.filter(q => (q.chapter_name || '全部题目') === cb.value).length; });
     document.getElementById('chapter-info').textContent = total > 0 ? `已选 ${total} 道题` : '请至少选择一个';
 }
-
 function closeChapterModal() { document.getElementById('chapter-modal').style.display = 'none'; }
 
 function confirmChapters() {
@@ -281,7 +312,7 @@ function confirmChapters() {
 
 // === Quiz ===
 function startQuiz() {
-    questionIndex = 0; totalCorrect = 0; totalWrong = 0;
+    questionIndex = 0; totalCorrect = 0; totalWrong = 0; answerDetails = [];
     document.getElementById('code-section').classList.add('section-hidden');
     document.getElementById('quiz-panel').classList.remove('section-hidden');
     document.getElementById('abort-btn').style.display = 'block';
@@ -300,6 +331,7 @@ function showNext() {
     const optDiv = document.getElementById('options');
     optDiv.innerHTML = '';
 
+    // Display question
     if (currentQ.question_type === 'image') {
         qText.innerHTML = `<b>Q${questionIndex + 1}：</b>`;
         qImg.src = currentQ.question_content;
@@ -309,20 +341,58 @@ function showNext() {
         qImg.style.display = 'none';
     }
 
-    // Options
-    const opts = currentQ.options ? currentQ.options.split('|') : [];
-    if (opts.length > 0 && currentQ.question_type === 'text') {
-        ['A', 'B', 'C', 'D'].forEach((letter, i) => {
-            if (i < opts.length) {
-                const btn = document.createElement('button');
-                btn.className = 'option-btn';
-                btn.textContent = `${letter}) ${opts[i]}`;
-                btn.onclick = () => handleAnswer(letter, btn);
-                optDiv.appendChild(btn);
-            }
+    // Render by question type
+    if (currentQ.question_type === 'fill') {
+        // Fill-in-the-blank
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'fill-input';
+        input.id = 'fill-answer-input';
+        input.placeholder = '请输入答案...';
+        input.onkeydown = (e) => { if (e.key === 'Enter') handleFillAnswer(); };
+        optDiv.appendChild(input);
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-primary';
+        btn.textContent = '确认';
+        btn.style.marginTop = '8px';
+        btn.onclick = handleFillAnswer;
+        optDiv.appendChild(btn);
+    } else if (currentQ.question_type === 'truefalse') {
+        // True/False
+        const opts = ['正确', '错误'];
+        const letters = ['A', 'B'];
+        // Shuffle TF? No, keep consistent. Answer: T=A(正确), F=B(错误)
+        const shuffled = opts.map((o, i) => ({ letter: letters[i], text: o, originalIndex: i }));
+        // Store mapping for answer checking
+        currentQ._shuffledOptions = shuffled;
+        shuffled.forEach(item => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = `${item.letter}) ${item.text}`;
+            btn.onclick = () => handleAnswer(item.letter, btn);
+            optDiv.appendChild(btn);
+        });
+    } else if (currentQ.question_type === 'text') {
+        // Multiple choice with shuffle
+        const opts = currentQ.options ? currentQ.options.split('|') : [];
+        const letters = ['A', 'B', 'C', 'D'].slice(0, opts.length);
+        // Create indexed array and shuffle
+        const indexed = opts.map((o, i) => ({ letter: letters[i], text: o, originalLetter: letters[i] }));
+        // Fisher-Yates shuffle
+        for (let i = indexed.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [indexed[i], indexed[j]] = [indexed[j], indexed[i]];
+        }
+        currentQ._shuffledOptions = indexed;
+        indexed.forEach(item => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = `${item.letter}) ${item.text}`;
+            btn.onclick = () => handleAnswer(item.originalLetter, btn);
+            optDiv.appendChild(btn);
         });
     } else {
-        // Image questions: just A/B/C/D
+        // Image questions: just A/B/C/D, no shuffle needed
         ['A', 'B', 'C', 'D'].forEach(letter => {
             const btn = document.createElement('button');
             btn.className = 'option-btn';
@@ -333,26 +403,71 @@ function showNext() {
     }
 }
 
-function handleAnswer(letter, btn) {
+function handleAnswer(originalLetter, btn) {
     if (!isAnswering) return;
     isAnswering = false;
-    const correct = letter === currentQ.answer;
+    const correct = originalLetter === currentQ.answer;
     const allBtns = document.querySelectorAll('#options .option-btn');
+
     allBtns.forEach(b => {
         b.disabled = true;
-        if (b.textContent.startsWith(currentQ.answer)) b.classList.add('correct-answer');
+        // Find the correct answer button and highlight it
+        if (currentQ._shuffledOptions) {
+            currentQ._shuffledOptions.forEach(item => {
+                if (item.originalLetter === currentQ.answer && b.textContent.startsWith(item.letter)) {
+                    b.classList.add('correct-answer');
+                }
+            });
+        } else {
+            // Image type - simple letter match
+            if (b.textContent.startsWith(currentQ.answer)) b.classList.add('correct-answer');
+        }
     });
+
     if (correct) {
         totalCorrect++;
         showStatus('✅ 正确！', 'correct');
+        answerDetails.push({ question_index: questionIndex, correct: true, user_answer: originalLetter });
     } else {
         totalWrong++;
         btn.classList.add('wrong-answer');
         showStatus(`❌ 错误！正确答案: ${currentQ.answer}`, 'incorrect');
-        addWrongRecord(currentQ, letter);
+        answerDetails.push({ question_index: questionIndex, correct: false, user_answer: originalLetter });
+        addWrongRecord(currentQ, originalLetter);
     }
     updateScore();
     setTimeout(() => { questionIndex++; showNext(); }, 1500);
+}
+
+function handleFillAnswer() {
+    if (!isAnswering) return;
+    isAnswering = false;
+    const input = document.getElementById('fill-answer-input');
+    const userAnswer = input.value.trim();
+    const correct = userAnswer.toLowerCase() === currentQ.answer.toLowerCase();
+
+    input.disabled = true;
+    input.style.borderColor = correct ? '#28a745' : '#dc3545';
+    input.style.backgroundColor = correct ? '#d4edda' : '#f8d7da';
+
+    // Show correct answer
+    const hint = document.createElement('div');
+    hint.style.cssText = 'font-weight:bold;text-align:center;padding:8px;margin-top:6px;border-radius:6px;';
+    if (correct) {
+        totalCorrect++;
+        hint.textContent = '✅ 正确！';
+        hint.style.cssText += 'background:#d4edda;color:#155724;';
+        answerDetails.push({ question_index: questionIndex, correct: true, user_answer: userAnswer });
+    } else {
+        totalWrong++;
+        hint.textContent = `❌ 错误！正确答案: ${currentQ.answer}`;
+        hint.style.cssText += 'background:#f8d7da;color:#721c24;';
+        answerDetails.push({ question_index: questionIndex, correct: false, user_answer: userAnswer });
+        addWrongRecord(currentQ, userAnswer);
+    }
+    document.getElementById('options').appendChild(hint);
+    updateScore();
+    setTimeout(() => { questionIndex++; showNext(); }, 2000);
 }
 
 function updateScore() {
@@ -365,17 +480,36 @@ function updateScore() {
 
 function showStatus(t, c) { const m = document.getElementById('msg2'); m.textContent = t; m.className = 'status-msg ' + c; m.style.display = 'block'; }
 
-function showFinish() {
+async function showFinish() {
     const total = totalCorrect + totalWrong;
+    const accuracy = total > 0 ? Math.round((totalCorrect / total) * 100) : 0;
     document.getElementById('finish-total').textContent = total;
     document.getElementById('finish-correct').textContent = totalCorrect;
     document.getElementById('finish-wrong').textContent = totalWrong;
-    document.getElementById('finish-acc').textContent = total > 0 ? Math.round((totalCorrect / total) * 100) + '%' : '—';
+    document.getElementById('finish-acc').textContent = accuracy + '%';
     document.getElementById('finish-overlay').style.display = 'flex';
+
+    // Submit results to Supabase
+    if (supabase && currentBank) {
+        try {
+            await supabase.from('quiz_results').insert({
+                bank_id: currentBank.id,
+                student_name: studentIdentity.name || '匿名',
+                class_name: studentIdentity.className || '',
+                total_questions: total,
+                correct_count: totalCorrect,
+                wrong_count: totalWrong,
+                accuracy: accuracy,
+                answers: answerDetails
+            });
+        } catch (e) {
+            console.error('Failed to submit results:', e);
+        }
+    }
 }
 
 function abortQuiz() {
-    quizQuestions = []; questionIndex = 0; totalCorrect = 0; totalWrong = 0;
+    quizQuestions = []; questionIndex = 0; totalCorrect = 0; totalWrong = 0; answerDetails = [];
     document.getElementById('quiz-panel').classList.add('section-hidden');
     document.getElementById('code-section').classList.remove('section-hidden');
     document.getElementById('abort-btn').style.display = 'none';
@@ -409,7 +543,15 @@ function saveWrongBook(records) { localStorage.setItem(WRONG_KEY, JSON.stringify
 
 function addWrongRecord(q, userAnswer) {
     const records = getWrongBook();
-    records.push({ question: q.question_content, type: q.question_type, answer: q.answer, userAnswer, timestamp: Date.now() });
+    records.push({
+        question: q.question_content,
+        type: q.question_type,
+        options: q.options,
+        answer: q.answer,
+        userAnswer,
+        timestamp: Date.now(),
+        bank_id: currentBank ? currentBank.id : null
+    });
     saveWrongBook(records);
 }
 
@@ -419,8 +561,20 @@ function openWrongBook() {
     if (!records.length) { list.innerHTML = '<p style="text-align:center;color:#999;">暂无错题</p>'; }
     else {
         list.innerHTML = records.map((r, i) => {
-            const content = r.type === 'image' ? `<img src="${r.question}">` : `<p>${esc(r.question)}</p>`;
-            return `<div class="wrong-book-item"><div style="font-size:0.85rem;color:#888;margin-bottom:6px;">#${i + 1} · ${new Date(r.timestamp).toLocaleString('zh-CN')}</div>${content}<div style="margin-top:6px;font-weight:bold;">你的答案: <span style="color:#dc3545">${r.userAnswer}</span> | 正确答案: <span style="color:#28a745">${r.answer}</span></div></div>`;
+            let content;
+            if (r.type === 'image') {
+                content = `<img src="${r.question}">`;
+            } else {
+                content = `<p>${esc(r.question)}</p>`;
+            }
+            let optionsHtml = '';
+            if (r.options && r.type === 'text') {
+                const opts = r.options.split('|');
+                optionsHtml = opts.map((o, j) => `${String.fromCharCode(65 + j)}) ${esc(o)}`).join(' &nbsp; ');
+            } else if (r.type === 'truefalse') {
+                optionsHtml = 'A) 正确 &nbsp; B) 错误';
+            }
+            return `<div class="wrong-book-item"><div style="font-size:0.85rem;color:#888;margin-bottom:6px;">#${i + 1} · ${r.type === 'truefalse' ? '判断题' : r.type === 'fill' ? '填空题' : r.type === 'image' ? '图片题' : '选择题'} · ${new Date(r.timestamp).toLocaleString('zh-CN')}</div>${content}${optionsHtml ? '<div style="font-size:0.85rem;color:#555;margin:4px 0;">' + optionsHtml + '</div>' : ''}<div style="margin-top:6px;font-weight:bold;">你的答案: <span style="color:#dc3545">${esc(r.userAnswer)}</span> | 正确答案: <span style="color:#28a745">${esc(r.answer)}</span></div></div>`;
         }).join('');
     }
     document.getElementById('wrong-book-overlay').style.display = 'flex';
@@ -428,6 +582,38 @@ function openWrongBook() {
 
 function closeWrongBook() { document.getElementById('wrong-book-overlay').style.display = 'none'; }
 function clearWrongBook() { if (confirm('确定清空全部错题？')) { saveWrongBook([]); openWrongBook(); } }
+
+// === Retry Wrong Questions ===
+async function retryWrongQuestions() {
+    const records = getWrongBook();
+    if (records.length === 0) return alert('错题本为空，无需重练！');
+
+    // Build quiz questions from wrong book
+    quizQuestions = [];
+    for (const r of records) {
+        let qContent = r.question;
+        // For image questions, the content is already the URL
+        const fakeQ = {
+            question_type: r.type,
+            question_content: qContent,
+            options: r.options,
+            answer: r.answer,
+            _retry: true
+        };
+        quizQuestions.push(fakeQ);
+    }
+
+    // Shuffle
+    for (let i = quizQuestions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [quizQuestions[i], quizQuestions[j]] = [quizQuestions[j], quizQuestions[i]];
+    }
+
+    closeWrongBook();
+    currentBank = null; // no bank context for retry
+    document.getElementById('code-section').classList.add('section-hidden');
+    startQuiz();
+}
 
 // === Utils ===
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
