@@ -183,7 +183,10 @@
 
     <!-- Stats Panel -->
     <div class="card section-hidden" id="stats-section">
-        <h2>📊 答题统计</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <h2 style="margin:0;border:none;padding:0;">📊 答题统计</h2>
+            <button class="btn btn-secondary btn-sm" onclick="hideStats()">← 返回主界面</button>
+        </div>
         <div id="stats-content"><div class="empty-state">加载中...</div></div>
         <div class="actions">
             <button class="btn btn-secondary" onclick="hideStats()">返回列表</button>
