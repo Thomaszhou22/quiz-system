@@ -1,85 +1,91 @@
-# 📝 Quiz System — 在线答题系统
+# 📝 Quiz System — Online Quiz Platform
 
-一个基于 Supabase 的师生互动答题系统。教师上传题目，学生输入代码即可做题。
+A Supabase-powered teacher–student quiz platform. Teachers upload questions; students join with a 6-digit code.
 
-## 🌐 在线使用
+**English** | **[中文](README.zh-CN.md)**
 
-- **教师端**: [thomaszhou22.github.io/quiz-system/teacher](https://thomaszhou22.github.io/quiz-system/teacher/)
-- **学生端**: [thomaszhou22.github.io/quiz-system/student](https://thomaszhou22.github.io/quiz-system/student/)
+**[English](README.md)** | **中文**
 
 ---
 
-## ✨ 功能
+## 🌐 Live Demo
 
-### 👩‍🏫 教师端
+- **Teacher:** [thomaszhou22.github.io/quiz-system/teacher](https://thomaszhou22.github.io/quiz-system/teacher/)
+- **Student:** [thomaszhou22.github.io/quiz-system/student](https://thomaszhou22.github.io/quiz-system/student/)
 
-| 功能 | 说明 |
+---
+
+## ✨ Features
+
+### 👩🏫 Teacher
+
+| Feature | Description |
 |------|------|
-| 创建题库 | 输入名称，自动生成 6 位分享代码 |
-| 章节管理 | 可为题库添加章节分类 |
-| 📷 图片上传 | 上传包含题目的图片，逐个标注正确答案（A/B/C/D） |
-| 📝 文字输入 | 按格式批量粘贴题目，自动解析 |
-| 📊 答题统计 | 查看学生提交记录、平均正确率、每题正确率排行、学生列表 |
-| ✏️ 题目编辑 | 查看、编辑、删除单道题目 |
-| 多题型支持 | 选择题、图片选择题、判断题、填空题 |
-| 分享代码 | 每个题库有唯一 6 位代码，分享给学生 |
+| Create quiz banks | Enter a name, get an auto-generated 6-digit share code |
+| Chapter management | Organize questions into chapters within a bank |
+| 📷 Image upload | Upload question images and mark correct answers (A/B/C/D) one by one |
+| 📝 Text input | Batch-paste questions in a simple format, auto-parsed |
+| 📊 Statistics | Student submissions, average accuracy, per-question accuracy ranking, student list |
+| ✏️ Edit questions | View, edit, and delete individual questions |
+| Multiple question types | Multiple choice, image-based, true/false, fill-in-the-blank |
+| Share code | Each bank has a unique 6-digit code to share with students |
 
-**文字输入格式：**
+**Text input format:**
 
-选择题：
+Multiple choice:
 ```
-1. 题目内容
-A) 选项A
-B) 选项B
-C) 选项C
-D) 选项D
+1. Question text
+A) Option A
+B) Option B
+C) Option C
+D) Option D
 Answer: B
 ```
 
-判断题：
+True/false:
 ```
-1. 题目内容
+1. Question text
 Answer: T
 ```
 
-填空题：
+Fill-in-the-blank:
 ```
-1. 题目内容
-Answer: 正确答案
+1. Question text
+Answer: correct answer
 ```
 
-### 🎓 学生端
+### 🎓 Student
 
-| 功能 | 说明 |
+| Feature | Description |
 |------|------|
-| 👤 学生身份 | 首次使用填写昵称和班级，自动保存 |
-| 输入代码 | 输入教师的 6 位题库代码加载题目 |
-| 章节选择 | 选择要做哪些章节，设置题目数量 |
-| 多题型答题 | 支持选择题、判断题、填空题、图片题 |
-| 选项随机 | 选择题选项自动打乱顺序 |
-| 即时判分 | 选完立即显示对错，高亮正确答案 |
-| 自动跳题 | 1.5 秒后自动进入下一题 |
-| 进度条 | 实时显示正确/错误/剩余题数 |
-| 图片放大 | 点击题目图片可全屏查看 |
-| 错题本 | 自动收录错题，可随时查看 |
-| 🔄 重练错题 | 从错题本中取题重新练习 |
-| 答题完成 | 显示总题数、正确率统计，自动提交到教师端 |
+| 👤 Identity | Enter nickname and class on first use, saved automatically |
+| Join with code | Enter the teacher's 6-digit code to load questions |
+| Chapter selection | Pick which chapters to practice and set question count |
+| Multiple question types | Multiple choice, true/false, fill-in-the-blank, image questions |
+| Shuffled options | Choice options are randomly shuffled |
+| Instant grading | Right/wrong shown immediately, correct answer highlighted |
+| Auto-advance | Next question after 1.5 seconds |
+| Progress bar | Live correct / wrong / remaining counts |
+| Image zoom | Tap a question image for fullscreen view |
+| Mistake book | Wrong answers collected automatically for review |
+| 🔄 Retry mistakes | Re-practice from your mistake book |
+| Completion summary | Total questions, accuracy stats, auto-submitted to the teacher |
 
 ---
 
-## ⚙️ 部署指南
+## ⚙️ Deployment Guide
 
-### 1. 创建 Supabase 项目
+### 1. Create a Supabase project
 
-1. 前往 [supabase.com](https://supabase.com) 创建项目
-2. 记录项目的 **URL** 和 **anon key**
+1. Go to [supabase.com](https://supabase.com) and create a project
+2. Note down the project **URL** and **anon key**
 
-### 2. 创建数据库表
+### 2. Create database tables
 
-在 Supabase SQL Editor 中执行：
+Run in the Supabase SQL Editor:
 
 ```sql
--- 题库表
+-- Quiz banks
 CREATE TABLE quiz_banks (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     name TEXT NOT NULL,
@@ -88,7 +94,7 @@ CREATE TABLE quiz_banks (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 题目表
+-- Questions
 CREATE TABLE quiz_questions (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     bank_id UUID REFERENCES quiz_banks(id) ON DELETE CASCADE,
@@ -100,11 +106,11 @@ CREATE TABLE quiz_questions (
     sort_order INT DEFAULT 0
 );
 
--- 答题结果表
+-- Results
 CREATE TABLE quiz_results (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     bank_id UUID REFERENCES quiz_banks(id) ON DELETE CASCADE,
-    student_name TEXT NOT NULL DEFAULT '匿名',
+    student_name TEXT NOT NULL DEFAULT 'Anonymous',
     class_name TEXT DEFAULT '',
     total_questions INT NOT NULL,
     correct_count INT NOT NULL,
@@ -114,12 +120,12 @@ CREATE TABLE quiz_results (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 开启 RLS
+-- Enable RLS
 ALTER TABLE quiz_banks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE quiz_questions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE quiz_results ENABLE ROW LEVEL SECURITY;
 
--- 允许匿名读写（开发用，生产环境请根据需求调整）
+-- Allow anonymous read/write (for development; tighten for production as needed)
 CREATE POLICY "Public read banks" ON quiz_banks FOR SELECT USING (true);
 CREATE POLICY "Public write banks" ON quiz_banks FOR INSERT WITH CHECK (true);
 CREATE POLICY "Public delete banks" ON quiz_banks FOR DELETE USING (true);
@@ -134,37 +140,37 @@ CREATE POLICY "Public read results" ON quiz_results FOR SELECT USING (true);
 CREATE POLICY "Public write results" ON quiz_results FOR INSERT WITH CHECK (true);
 ```
 
-### 3. 创建图片存储桶（图片上传需要）
+### 3. Create the image storage bucket (for image upload)
 
-1. 进入 Supabase → Storage
-2. 创建名为 `quiz-images` 的 bucket
-3. 设为 **Public**
+1. Go to Supabase → Storage
+2. Create a bucket named `quiz-images`
+3. Set it to **Public**
 
-### 4. 配置网站
+### 4. Configure the site
 
-打开教师端或学生端，在 Supabase 配置区域填入 URL 和 anon key，点击保存即可。
+Open the teacher or student app, fill in the Supabase URL and anon key in the config section, and save.
 
 ---
 
-## 🛠 技术信息
+## 🛠 Technical Notes
 
-- **技术栈**: 纯 HTML + CSS + JavaScript（无框架，单文件应用）
-- **云端存储**: Supabase（PostgreSQL + Storage）
-- **本地存储**: localStorage（配置、身份信息、错题本）
-- **部署**: GitHub Pages
-- **无需安装**: 浏览器打开即用
+- **Stack**: Pure HTML + CSS + JavaScript (no framework, single-file apps)
+- **Cloud storage**: Supabase (PostgreSQL + Storage)
+- **Local storage**: localStorage (config, identity, mistake book)
+- **Hosting**: GitHub Pages
+- **No installation**: works in any browser
 
-## 📁 项目结构
+## 📁 Project Structure
 
 ```
 quiz-system/
 ├── teacher/
-│   └── index.html    # 教师端
+│   └── index.html    # Teacher app
 ├── student/
-│   └── index.html    # 学生端
+│   └── index.html    # Student app
 └── README.md
 ```
 
-## 许可
+## License
 
 MIT License
